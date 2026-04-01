@@ -3,516 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บุญสมแอร์เซอร์วิส</title>
+    <title>บุญสมบุญสมแอร์เซอร์วิส | ติดตั้ง ล้าง ซ่อมแอร์</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #0a1628;
-            --bg-secondary: #0f2847;
-            --fg: #f0f6fc;
-            --muted: #7a8ba3;
-            --accent: #00d4ff;
-            --accent-secondary: #00ff94;
-            --card: rgba(15, 40, 71, 0.7);
-            --border: rgba(0, 212, 255, 0.2);
-            --highlight: #ffd700;
-            --danger: #ff4757;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--fg); overflow-x: hidden; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Prompt', sans-serif; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f0fdfa; /* สีฟ้าน้ำทะเลอ่อนๆ */ }
+        .modal { display: none; }
+        .modal.active { display: flex; }
         
-        /* พื้นหลัง */
-        .hero-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
-        .gradient-orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: float 20s ease-in-out infinite; }
-        .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(0, 212, 255, 0.3) 0%, transparent 70%); top: -200px; right: -100px; }
-        .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(0, 255, 148, 0.2) 0%, transparent 70%); bottom: -150px; left: -100px; animation-delay: -7s; }
-        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(30px, -30px) scale(1.05); } 50% { transform: translate(-20px, 20px) scale(0.95); } 75% { transform: translate(20px, 30px) scale(1.02); } }
-        .grid-pattern { position: absolute; inset: 0; background-image: linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px); background-size: 50px 50px; z-index: 1; }
-        
-        /* การ์ดสินค้า */
-        .product-card { background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; display: flex; flex-direction: column; height: 100%; }
-        .product-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, transparent 50%); opacity: 0; transition: opacity 0.4s ease; }
-        .product-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 212, 255, 0.2); }
-        .admin-mode .product-card { cursor: pointer; }
-        .admin-mode .product-card:hover { border-color: var(--highlight); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2); }
-        
-        /* สัดส่วนรูปภาพ 4:3 อัตโนมัติทุกหน้าจอ */
-        .product-image-container { position: relative; width: 100%; padding-top: 75%; overflow: hidden; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg) 100%); }
-        .product-image-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        /* ป้ายต่างๆ */
-        .type-badge { position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 20px; font-size: 11px; sm:font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; }
-        .badge-normal { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
-        .badge-inverter { background: linear-gradient(135deg, var(--accent), #0099cc); color: var(--bg); }
-        .badge-super { background: linear-gradient(135deg, var(--highlight), #ff8c00); color: var(--bg); }
-        
-        /* ซ่อน Scrollbar ของตัวกรองบนมือถือ แต่ยังเลื่อนได้ */
+        /* ซ่อน scrollbar สำหรับเมนูยี่ห้อแอร์ แต่ยังเลื่อนได้ */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .filter-btn { padding: 8px 16px; sm:padding: 10px 20px; border-radius: 30px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-weight: 500; font-size: 14px; sm:font-size: 16px; cursor: pointer; transition: all 0.3s ease; font-family: 'Prompt', sans-serif; white-space: nowrap; }
-        .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0, 212, 255, 0.1); }
-        .filter-btn.active { background: linear-gradient(135deg, var(--accent), #0099cc); color: var(--bg); border-color: transparent; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3); }
         
-        /* ราคาและสถานะ */
-        .price-tag { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 1.25rem; color: var(--accent-secondary); }
-        @media (min-width: 640px) { .price-tag { font-size: 1.5rem; } }
-        .price-tag.no-price { font-size: 1rem; sm:font-size: 1.1rem; color: var(--muted); }
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; sm:font-size: 11px; font-weight: 600; margin-left: 8px; white-space: nowrap; }
-        .status-new { background: rgba(0, 255, 148, 0.2); color: var(--accent-secondary); border: 1px solid var(--accent-secondary); }
-        .status-wait { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
-        
-        /* ฟอร์มและ Modal */
-        .search-input { background: rgba(15, 40, 71, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px 12px 45px; sm:padding: 14px 20px 14px 50px; color: var(--fg); width: 100%; font-size: 14px; sm:font-size: 16px; transition: all 0.3s ease; }
-        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; sm:padding: 20px; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; sm:border-radius: 20px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; transform: scale(0.9) translateY(20px); transition: transform 0.3s ease; }
-        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
-        .form-input, .form-select { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; sm:padding: 12px 16px; color: var(--fg); font-size: 14px; sm:font-size: 15px; transition: all 0.3s ease; }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 212, 255, 0.2); }
-        .form-label { display: block; font-size: 12px; sm:font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; }
-        .form-select option { background: var(--bg-secondary); color: var(--fg); }
-        
-        /* ปุ่มกดต่างๆ */
-        .btn-primary { background: linear-gradient(135deg, var(--accent), #0099cc); color: var(--bg); font-weight: 600; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s ease; font-family: 'Prompt', sans-serif; display: flex; align-items: center; justify-content: center; width: 100%; sm:width: auto; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3); }
-        .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s ease; }
-        .btn-secondary { background: transparent; color: var(--muted); font-weight: 600; padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.3s ease; }
-        .btn-secondary:hover { border-color: var(--muted); color: var(--fg); }
-        
-        /* ระบบแอดมิน */
-        .admin-toggle { position: fixed; bottom: 20px; right: 20px; sm:bottom: 24px; sm:right: 24px; width: 50px; height: 50px; sm:width: 60px; sm:height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #0099cc); border: none; cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4); }
-        .admin-toggle.active { background: linear-gradient(135deg, var(--highlight), #ff8c00); box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4); }
-        .admin-toggle svg { width: 24px; height: 24px; sm:width: 28px; sm:height: 28px; color: var(--bg); }
-        .admin-indicator { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--highlight), var(--accent), var(--highlight)); z-index: 100; display: none; }
-        .admin-mode .admin-indicator { display: block; }
-        .edit-overlay { position: absolute; inset: 0; background: rgba(255, 215, 0, 0.9); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; z-index: 10; }
-        .admin-mode .product-card:hover .edit-overlay { opacity: 1; }
-        .edit-overlay svg { width: 40px; height: 40px; color: var(--bg); }
-        
-        /* แจ้งเตือน */
-        .toast { position: fixed; bottom: 90px; right: 20px; sm:bottom: 100px; sm:right: 24px; background: var(--bg-secondary); border: 1px solid var(--accent-secondary); color: var(--fg); padding: 14px 20px; border-radius: 12px; z-index: 200; transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); font-size: 14px; sm:font-size: 16px; }
-        .toast.show { transform: translateX(0); }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        .brand-btn.active { background-color: #1e3a8a; color: white; border-color: #1e3a8a; }
     </style>
 </head>
 <body>
-    <div class="admin-indicator"></div>
 
-    <header class="relative min-h-[30vh] sm:min-h-[35vh] flex items-center justify-center overflow-hidden">
-        <div class="hero-bg">
-            <div class="gradient-orb orb-1"></div>
-            <div class="gradient-orb orb-2"></div>
-        </div>
-        <div class="grid-pattern"></div>
-        
-        <div class="relative z-10 text-center px-4 py-8 sm:py-10">
-            <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
-                <span class="block text-white mb-1 sm:mb-2">บุญสม</span>
-                <span class="block bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">แอร์เซอร์วิส</span>
-            </h1>
-            <p class="text-cyan-200 mt-3 sm:mt-4 text-sm sm:text-lg md:text-xl font-light">ตัวแทนจำหน่ายและติดตั้งเครื่องปรับอากาศ</p>
+    <header class="bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 text-white shadow-lg sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">❄️</span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold leading-tight">บุญสมบุญสมแอร์เซอร์วิส</h1>
+                    <p class="text-xs md:text-sm text-cyan-100">จำหน่าย ติดตั้ง ล้าง ซ่อม ย้าย แอร์ทุกยี่ห้อ</p>
+                </div>
+            </div>
+            <button id="adminBtn" onclick="toggleAdmin()" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/50 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition duration-300 shadow-sm">
+                🔒 เข้าสู่ระบบ
+            </button>
         </div>
     </header>
 
-    <section class="sticky top-0 z-50 bg-gradient-to-b from-[#0a1628] to-[#0a1628]/95 backdrop-blur-lg border-b border-cyan-900/30 py-4 shadow-lg shadow-cyan-900/10">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-                <div class="relative w-full sm:max-w-md">
-                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="searchInput" class="search-input" placeholder="ค้นหารุ่นแอร์, BTU, แบรนด์...">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <h2 class="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">เลือกยี่ห้อแอร์</h2>
+            <div id="brand-filters" class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
                 </div>
-                <button id="addProductBtn" class="btn-primary hidden">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        เพิ่มสินค้า
-                    </span>
-                </button>
-            </div>
-            
-            <div class="flex flex-nowrap overflow-x-auto pb-2 justify-start sm:justify-center gap-2 hide-scrollbar snap-x" id="filterContainer">
-                <button class="filter-btn active snap-start" data-brand="all">ทั้งหมด</button>
-                <button class="filter-btn snap-start" data-brand="mitsubishi">มิตซูบิชิ</button>
-                <button class="filter-btn snap-start" data-brand="daikin">ไดกิ้น</button>
-                <button class="filter-btn snap-start" data-brand="central">เซ็นทรัลแอร์</button>
-                <button class="filter-btn snap-start" data-brand="carrier">แคเรีย</button>
-                <button class="filter-btn snap-start" data-brand="haier">ไฮเออร์</button>
-                <button class="filter-btn snap-start" data-brand="lg">เอลจี</button>
-                <button class="filter-btn snap-start" data-brand="other">อื่นๆ</button>
-            </div>
         </div>
-    </section>
+    </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 sm:py-12">
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
-        <div id="emptyState" class="hidden text-center py-20">
-            <svg class="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <p class="text-gray-400 text-base sm:text-lg">ไม่พบรุ่นที่ค้นหา</p>
-        </div>
+    <main class="container mx-auto px-4 py-8 min-h-screen">
+        <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
     </main>
 
-    <button id="adminToggle" class="admin-toggle" title="เปิด/ปิดโหมดแก้ไข">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-    </button>
+    <footer class="bg-slate-800 text-white py-6 text-center">
+        <p>© 2026 บุญสมบุญสมแอร์เซอร์วิส. All rights reserved.</p>
+    </footer>
 
-    <div id="editModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold text-white font-[Prompt]" id="modalTitle">เพิ่ม/แก้ไขสินค้า</h2>
-                    <button id="closeModal" type="button" class="text-gray-400 hover:text-white transition">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+    <div id="loginModal" class="modal fixed inset-0 bg-black/60 backdrop-blur-sm justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-96 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span class="text-2xl">🔒</span>
                 </div>
-                
-                <form id="productForm">
-                    <input type="hidden" id="productId">
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                        <div>
-                            <label class="form-label">แบรนด์</label>
-                            <select id="brandInput" class="form-select" required>
-                                <option value="mitsubishi">มิตซูบิชิ (Mitsubishi)</option>
-                                <option value="daikin">ไดกิ้น (Daikin)</option>
-                                <option value="central">เซ็นทรัลแอร์ (Central Air)</option>
-                                <option value="carrier">แคเรีย (Carrier)</option>
-                                <option value="haier">ไฮเออร์ (Haier)</option>
-                                <option value="lg">เอลจี (LG)</option>
-                                <option value="other">อื่นๆ</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="form-label">ชื่อแบรนด์ (แสดงในการ์ด)</label>
-                            <input type="text" id="brandNameInput" class="form-input" placeholder="เช่น Mitsubishi Heavy Duty" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 sm:mb-4">
-                        <label class="form-label">ชื่อรุ่น</label>
-                        <input type="text" id="modelInput" class="form-input" placeholder="เช่น SRK10YYP-W1" required>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                        <div>
-                            <label class="form-label text-emerald-400">ขนาด BTU</label>
-                            <input type="text" id="btuInput" class="form-input border-emerald-500/50" placeholder="เช่น 9000">
-                        </div>
-                        <div>
-                            <label class="form-label text-emerald-400">ขนาดห้อง (ตร.ม.)</label>
-                            <input type="text" id="roomSizeInput" class="form-input border-emerald-500/50" placeholder="เช่น 9-14">
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                        <div>
-                            <label class="form-label">ราคา (บาท) - ใส่ 0 ถ้ารอสอบถาม</label>
-                            <input type="number" id="priceInput" class="form-input" required>
-                        </div>
-                        <div>
-                            <label class="form-label">สถานะสินค้า</label>
-                            <select id="statusInput" class="form-select">
-                                <option value="">ปกติ (ไม่แสดงป้าย)</option>
-                                <option value="new">มาใหม่ (NEW)</option>
-                                <option value="wait">รอของ</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 sm:mb-4">
-                        <label class="form-label text-cyan-400">ลิงก์รูปภาพสินค้า (URL) - ไม่บังคับ</label>
-                        <input type="text" id="imageInput" class="form-input border-cyan-500/50" placeholder="เช่น https://postimg.cc/your-image.jpg">
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-5 sm:mb-6">
-                        <div>
-                            <label class="form-label">ระบบแอร์</label>
-                            <select id="typeInput" class="form-select">
-                                <option value="normal">ธรรมดา (Fixed Speed)</option>
-                                <option value="inverter">Inverter</option>
-                                <option value="super">Super Inverter</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="form-label">ป้ายระบบ (แสดงในการ์ด)</label>
-                            <input type="text" id="typeLabelInput" class="form-input" placeholder="เช่น INVERTER">
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-cyan-900/50">
-                        <button type="submit" class="btn-primary flex-1 order-1 sm:order-2">บันทึกข้อมูล</button>
-                        <button type="button" id="deleteBtn" class="btn-danger hidden order-3 sm:order-1">ลบสินค้านี้</button>
-                        <button type="button" id="cancelBtn" class="btn-secondary w-full sm:w-auto order-2 sm:order-3">ยกเลิก</button>
-                    </div>
-                </form>
+                <h2 class="text-2xl font-bold text-gray-800">โหมดผู้ดูแลระบบ</h2>
+                <p class="text-sm text-gray-500">กรุณาใส่รหัสผ่านเพื่อแก้ไขข้อมูล</p>
+            </div>
+            <input type="password" id="adminPassword" placeholder="รหัสผ่าน" class="w-full border-2 border-gray-200 focus:border-blue-500 outline-none p-3 rounded-xl mb-6 text-center text-lg tracking-widest">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal('loginModal')" class="flex-1 bg-gray-100 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-200 font-semibold transition">ยกเลิก</button>
+                <button onclick="checkPassword()" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 font-semibold shadow-lg shadow-blue-600/30 transition">เข้าสู่ระบบ</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="toast">
-        <span id="toastMessage">บันทึกสำเร็จ!</span>
+    <div id="editModal" class="modal fixed inset-0 bg-black/60 backdrop-blur-sm justify-center items-center z-50 p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-5 text-gray-800 border-b pb-3">✏️ แก้ไขข้อมูลแอร์</h2>
+            <input type="hidden" id="editId">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-1 text-sm font-semibold text-gray-700">ชื่อรุ่น</label>
+                    <input type="text" id="editModel" class="w-full border border-gray-300 focus:border-blue-500 outline-none p-2.5 rounded-lg bg-gray-50">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block mb-1 text-sm font-semibold text-gray-700">ราคา (บาท)</label>
+                        <input type="text" id="editPrice" class="w-full border border-gray-300 focus:border-blue-500 outline-none p-2.5 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-semibold text-gray-700">BTU</label>
+                        <input type="text" id="editBtu" placeholder="เช่น 9000" class="w-full border border-gray-300 focus:border-blue-500 outline-none p-2.5 rounded-lg">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block mb-1 text-sm font-semibold text-gray-700">ขนาดห้องที่เหมาะสม (ตร.ม.)</label>
+                    <input type="text" id="editRoom" placeholder="เช่น 9-14 ตร.ม." class="w-full border border-gray-300 focus:border-blue-500 outline-none p-2.5 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block mb-1 text-sm font-semibold text-gray-700">ลิงก์รูปภาพจากเว็บ (URL)</label>
+                    <input type="text" id="editImg" placeholder="https://..." class="w-full border border-gray-300 focus:border-blue-500 outline-none p-2.5 rounded-lg">
+                    <p class="text-xs text-gray-500 mt-1">*คลิกขวาที่รูปบนเว็บที่ต้องการ เลือก Copy image address แล้วนำมาวาง</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-8 pt-4 border-t">
+                <button onclick="closeModal('editModal')" class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold transition">ยกเลิก</button>
+                <button onclick="saveEdit()" class="px-5 py-2.5 rounded-lg bg-green-500 text-white hover:bg-green-600 font-semibold shadow-lg shadow-green-500/30 transition">💾 บันทึกการเปลี่ยนแปลง</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "4321";
+        // ข้อมูลดิบเริ่มต้น
+        const initialData = [
+            { cat: "มิตซู ธรรมดา", items: [ {m: "MS-GY09VF", p: "16,100"}, {m: "MS-GY12VF", p: "19,000"}, {m: "MS-GY18VF", p: "28,000"} ] },
+            { cat: "มิตซู Inverter (ใหม่)", items: [ {m: "MSY-KA09", p: "15,600"}, {m: "MSY-KA13", p: "16,000"}, {m: "MSY-KA15", p: "21,400"}, {m: "MSY-KA18", p: "24,200"}, {m: "MSY-KA24", p: "32,000"} ] },
+            { cat: "มิตซู Supper Inverter (ใหม่)", items: [ {m: "MSY-GZ09", p: "21,600"}, {m: "MSY-GZ13", p: "25,150"}, {m: "MSY-GZ18", p: "33,000"} ] },
+            { cat: "ไดกิ้น ธรรมดา", items: [ {m: "FTM09", p: "15,100"}, {m: "FTM13", p: "17,600"}, {m: "FTM15", p: "20,800"}, {m: "FTM18", p: "25,000"} ] },
+            { cat: "ไดกิ้น Inverter", items: [ {m: "FTKB09ZV", p: "13,900"}, {m: "FTKB12ZV", p: "14,500"}, {m: "FTKB15ZV", p: "18,500"}, {m: "FTKB18ZV", p: "19,700"}, {m: "FTKB24ZV", p: "25,000"} ] },
+            { cat: "เซ็นทรัลแอร์ ธรรมดา", items: [ {m: "MFE09", p: "-"}, {m: "MFE13", p: "-"}, {m: "MFE18", p: "16,800"}, {m: "MFE25", p: "20,600"}, {m: "2JSFE09", p: "11,600"}, {m: "2JSFE13", p: "12,400"}, {m: "2JSFE18", p: "16,200"}, {m: "2JSFE25", p: "20,000"} ] },
+            { cat: "เซ็นทรัลแอร์ Inverter", items: [ {m: "IVM09", p: "11,600"}, {m: "IVM13", p: "12,600"}, {m: "IVM18", p: "16,700"}, {m: "IVM25", p: "20,600"}, {m: "IVJS09", p: "11,600"}, {m: "IVJS13", p: "12,200"}, {m: "IVJS18", p: "16,000"}, {m: "IVJS25", p: "19,900"} ] },
+            { cat: "แคเรีย ธรรมดา COPPER TECH S (ใหม่2026)", items: [ {m: "NSAA10", p: "12,800"}, {m: "NSAA13", p: "13,100"}, {m: "NSAA18", p: "17,800"}, {m: "NSAA25", p: "23,100"} ] },
+            { cat: "แคเรีย ธรรมดา Copper 7", items: [ {m: "TSAA010", p: "13,800"}, {m: "TSAA013", p: "14,300"}, {m: "TSAA018", p: "20,900"}, {m: "TSAA025", p: "26,500"} ] },
+            { cat: "แคเรียน อิน Copper 11 (Wi-Fi)", items: [ {m: "42TVEA010", p: "14,000"}, {m: "42TVEA016", p: "19,100"} ] },
+            { cat: "แคเรีย อิน Coper SEAL (ใหม่ 2026)", items: [ {m: "42TVDB010", p: "13,150 รอของเข้า"}, {m: "42TVDB013", p: "13,900 รอของเข้า"}, {m: "42TVDB016", p: "17,800 รอของเข้า"}, {m: "42TVDB018", p: "19,000"}, {m: "42TVDB022", p: "23,800 รอของเข้า"}, {m: "42TVDB026", p: "28,600 รอของเข้า"} ] },
+            { cat: "แคเรีย อิน Copper ION Wi-Fi (ใหม่2026)", items: [ {m: "42TVEB10", p: "13,800"}, {m: "42TVEB13", p: "14,600"}, {m: "42TVEB16", p: "18,500"}, {m: "42TVEB18", p: "19,600"}, {m: "42TVEB22", p: "24,500"}, {m: "42TVEB26", p: "29,300"} ] },
+            { cat: "ไฮเออร์ ธรรมดา", items: [ {m: "CQRC10", p: "12,100"}, {m: "CQRC13", p: "12,400"}, {m: "CQRC18", p: "17,200"}, {m: "CQRC24", p: "21,100"} ] },
+            { cat: "ไฮเออร์ Inverter", items: [ {m: "VQAC09", p: "12,400"}, {m: "VQAC12", p: "12,900"}, {m: "VQAC15", p: "16,100"}, {m: "VQAC18", p: "17,200"}, {m: "VQAC24", p: "21,300"} ] },
+            { cat: "Mitsubishi Heavy ธรรมดา", items: [ {m: "CYV10", p: "15,400 รหัสใหม่"}, {m: "CYV13", p: "17,150 รหัสใหม่"}, {m: "CYV15", p: "19,600 รหัสใหม่"}, {m: "CYV18", p: "24,300 รหัสใหม่"}, {m: "CXV24", p: "31,300"} ] },
+            { cat: "อิมิเน้น ธรรมดา", items: [ {m: "AFG09F", p: "12,600"}, {m: "AFH12F", p: "13,400"}, {m: "AFH18F", p: "17,800"}, {m: "AFH24F", p: "22,000"} ] },
+            { cat: "อิมิเน้น Inverter", items: [ {m: "AVH09", p: "13,000"}, {m: "AVH12", p: "13,500"}, {m: "AVH18", p: "18,000"}, {m: "AVH24", p: "21,900"} ] },
+            { cat: "ฮิตาชิ ธรรมดา", items: [ {m: "BJ13", p: "13,300"}, {m: "BJ18", p: "18,500"}, {m: "BJ24", p: "22,800"} ] },
+            { cat: "SINCLAIR Inverter", items: [ {m: "SIHC-09", p: "11,100"}, {m: "SIHC-12", p: "11,600"}, {m: "SIHC-18", p: "14,900"}, {m: "SIHC-24", p: "18,400"} ] },
+            { cat: "TCL ธรรมดา", items: [ {m: "MFS10", p: "11,700"}, {m: "MFS13", p: "12,600"}, {m: "MFS19", p: "17,400"}, {m: "MFS26", p: "20,800"} ] },
+            { cat: "TCL Inverter WiFi", items: [ {m: "T-PROWD10", p: "12,100"}, {m: "T-PROWD13", p: "12,700"}, {m: "T-PROWD19", p: "16,800"}, {m: "T-PROWD25", p: "19,900"} ] },
+            { cat: "เอลจี Inverter", items: [ {m: "IBY11", p: "12,700 รหัสใหม่"}, {m: "IBY13", p: "12,900 รหัสใหม่"}, {m: "IKR18", p: "17,400"} ] },
+            { cat: "ไมเดีย Inverter", items: [ {m: "MSCE10", p: "10,700"}, {m: "MSCE13", p: "11,400"}, {m: "MSNE19", p: "16,500"}, {m: "MSNE25", p: "20,700"} ] },
+            { cat: "AUX Inverter", items: [ {m: "ASW-09/DIM-1S", p: "10,700"}, {m: "ASW-13/DIM-1S", p: "11,800"}, {m: "ASW-18/DIM-1S", p: "14,800"}, {m: "ASW-24/DIM-1S", p: "18,900"} ] },
+            { cat: "ซัยโจ ธรรมดา", items: [ {m: "SWG12", p: "11,800 ตัวฟอก"}, {m: "SWG18", p: "15,300"}, {m: "SWG25", p: "19,300"} ] },
+            { cat: "แคนดี้ ธรรมดา", items: [ {m: "CE-09PCTF", p: "9,800"}, {m: "CE-12PCTF", p: "10,900"}, {m: "CE-18PCTF", p: "12,500"} ] },
+            { cat: "แคนดี้ Inverter", items: [ {m: "CE-09VPCT", p: "รอของเข้า"}, {m: "CE-12VPCT", p: "10,900"}, {m: "CE-18VPCT", p: "12,500"}, {m: "CE-24VPCT", p: "14,400"} ] }
+        ];
 
-        // =========================================================================
-        // วางข้อมูลที่ก๊อปปี้มาจากหน้า Console ลงในวงเล็บก้ามปูด้านล่างนี้ครับ
-        // =========================================================================
-        const defaultProducts = {"id":1,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MS-GY09VF","btu":"9,212","roomSize":"","price":16100,"type":"normal","typeLabel":"ธรรมดา","status":"","imageUrl":"https://kangyong.co.th/wp-content/uploads/2022/11/web_product_sub_cat_code_nCFLBJSpuF150208.png"},{"id":2,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MS-GY12VF","btu":"11,601","roomSize":"","price":19000,"type":"normal","typeLabel":"ธรรมดา","status":"","imageUrl":"https://kangyong.co.th/wp-content/uploads/2022/11/web_product_sub_cat_code_nCFLBJSpuF150208.png"},{"id":3,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MS-GY18VF","btu":"18,084","roomSize":"","price":28000,"type":"normal","typeLabel":"ธรรมดา","status":"","imageUrl":"https://kangyong.co.th/wp-content/uploads/2022/11/web_product_sub_cat_code_nCFLBJSpuF150208.png"},{"id":4,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-KA09","btu":"9,212","roomSize":"","price":15600,"type":"inverter","typeLabel":"Inverter","status":"new","imageUrl":"https://kangyong.co.th/wp-content/uploads/2026/01/MSY-KA_09side1.jpg"},{"id":5,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-KA13","price":16000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":6,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-KA15","price":21400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":7,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-KA18","price":24200,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":8,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-KA24","price":32000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":9,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-GZ09","price":21600,"type":"super","typeLabel":"Super Inverter","stars":0,"status":"new"},{"id":10,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-GZ13","price":25150,"type":"super","typeLabel":"Super Inverter","stars":0,"status":"new"},{"id":11,"brand":"mitsubishi","brandName":"มิตซูบิชิ","model":"MSY-GZ18","price":33000,"type":"super","typeLabel":"Super Inverter","stars":0,"status":"new"},{"id":12,"brand":"daikin","brandName":"ไดกิ้น","model":"FTM09","price":15100,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":13,"brand":"daikin","brandName":"ไดกิ้น","model":"FTM13","price":17600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":14,"brand":"daikin","brandName":"ไดกิ้น","model":"FTM15","price":20800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":15,"brand":"daikin","brandName":"ไดกิ้น","model":"FTM18","price":25000,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":16,"brand":"daikin","brandName":"ไดกิ้น","model":"FTKB09ZV","price":13900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":17,"brand":"daikin","brandName":"ไดกิ้น","model":"FTKB12ZV","price":14500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":18,"brand":"daikin","brandName":"ไดกิ้น","model":"FTKB15ZV","price":18500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":19,"brand":"daikin","brandName":"ไดกิ้น","model":"FTKB18ZV","price":19700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":20,"brand":"daikin","brandName":"ไดกิ้น","model":"FTKB24ZV","price":25000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":21,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"MFE09","price":0,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":22,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"MFE13","price":0,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":23,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"MFE18","price":16800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":24,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"MFE25","price":20600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":25,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"2JSFE09","price":11600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":26,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"2JSFE13","price":12400,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":27,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"2JSFE18","price":16200,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":28,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"2JSFE25","price":20000,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":29,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVM09","price":11600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":30,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVM13","price":12600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":31,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVM18","price":16700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":32,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVM25","price":20600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":33,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVJS09","price":11600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":34,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVJS13","price":12200,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":35,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVJS18","price":16000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":36,"brand":"central","brandName":"เซ็นทรัลแอร์","model":"IVJS25","price":19900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":37,"brand":"carrier","brandName":"แคเรีย","model":"NSAA10","price":12800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":38,"brand":"carrier","brandName":"แคเรีย","model":"NSAA13","price":13100,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":39,"brand":"carrier","brandName":"แคเรีย","model":"NSAA18","price":17800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":40,"brand":"carrier","brandName":"แคเรีย","model":"NSAA25","price":23100,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":41,"brand":"carrier","brandName":"แคเรีย","model":"TSAA010","price":13800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":42,"brand":"carrier","brandName":"แคเรีย","model":"TSAA013","price":14300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":43,"brand":"carrier","brandName":"แคเรีย","model":"TSAA018","price":20900,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":44,"brand":"carrier","brandName":"แคเรีย","model":"TSAA025","price":26500,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":45,"brand":"carrier","brandName":"แคเรีย","model":"42TVEA010","price":14000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":46,"brand":"carrier","brandName":"แคเรีย","model":"42TVEA016","price":19100,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":47,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB010","price":13150,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":48,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB013","price":13900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":49,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB016","price":17800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":50,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB018","price":19000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":51,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB022","price":23800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":52,"brand":"carrier","brandName":"แคเรีย","model":"42TVDB026","price":28600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":53,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB10","price":13800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":54,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB13","price":14600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":55,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB16","price":18500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":56,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB18","price":19600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":57,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB22","price":24500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":58,"brand":"carrier","brandName":"แคเรีย","model":"42TVEB26","price":29300,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":59,"brand":"haier","brandName":"ไฮเออร์","model":"CQRC10","price":12100,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":60,"brand":"haier","brandName":"ไฮเออร์","model":"CQRC13","price":12400,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":61,"brand":"haier","brandName":"ไฮเออร์","model":"CQRC18","price":17200,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":62,"brand":"haier","brandName":"ไฮเออร์","model":"CQRC24","price":21100,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":63,"brand":"haier","brandName":"ไฮเออร์","model":"VQAC09","price":12400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":64,"brand":"haier","brandName":"ไฮเออร์","model":"VQAC12","price":12900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":65,"brand":"haier","brandName":"ไฮเออร์","model":"VQAC15","price":16100,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":66,"brand":"haier","brandName":"ไฮเออร์","model":"VQAC18","price":17200,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":67,"brand":"haier","brandName":"ไฮเออร์","model":"VQAC24","price":21300,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":68,"brand":"other","brandName":"มิตซูบิชิ เฮฟวี่","model":"CYV10","price":15400,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":69,"brand":"other","brandName":"มิตซูบิชิ เฮฟวี่","model":"CYV13","price":17150,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":70,"brand":"other","brandName":"มิตซูบิชิ เฮฟวี่","model":"CYV15","price":19600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":71,"brand":"other","brandName":"มิตซูบิชิ เฮฟวี่","model":"CYV18","price":24300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":"new"},{"id":72,"brand":"other","brandName":"มิตซูบิชิ เฮฟวี่","model":"CXV24","price":31300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":73,"brand":"other","brandName":"อิมิเน้นท์","model":"AFG09F","price":12600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":74,"brand":"other","brandName":"อิมิเน้นท์","model":"AFH12F","price":13400,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":75,"brand":"other","brandName":"อิมิเน้นท์","model":"AFH18F","price":17800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":76,"brand":"other","brandName":"อิมิเน้นท์","model":"AFH24F","price":22000,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":77,"brand":"other","brandName":"อิมิเน้นท์","model":"AVH09","price":13000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":78,"brand":"other","brandName":"อิมิเน้นท์","model":"AVH12","price":13500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":79,"brand":"other","brandName":"อิมิเน้นท์","model":"AVH18","price":18000,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":80,"brand":"other","brandName":"อิมิเน้นท์","model":"AVH24","price":21900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":81,"brand":"other","brandName":"ฮิตาชิ","model":"BJ13","price":13300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":82,"brand":"other","brandName":"ฮิตาชิ","model":"BJ18","price":18500,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":83,"brand":"other","brandName":"ฮิตาชิ","model":"BJ24","price":22800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":84,"brand":"other","brandName":"ซินแคลร์","model":"SIHC-09","price":11100,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":85,"brand":"other","brandName":"ซินแคลร์","model":"SIHC-12","price":11600,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":86,"brand":"other","brandName":"ซินแคลร์","model":"SIHC-18","price":14900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":87,"brand":"other","brandName":"ซินแคลร์","model":"SIHC-24","price":18400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":88,"brand":"other","brandName":"TCL","model":"MFS10","price":11700,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":89,"brand":"other","brandName":"TCL","model":"MFS13","price":12600,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":90,"brand":"other","brandName":"TCL","model":"MFS19","price":17400,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":91,"brand":"other","brandName":"TCL","model":"MFS26","price":20800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":92,"brand":"other","brandName":"TCL","model":"T-PROWD10","price":12100,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":93,"brand":"other","brandName":"TCL","model":"T-PROWD13","price":12700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":94,"brand":"other","brandName":"TCL","model":"T-PROWD19","price":16800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":95,"brand":"other","brandName":"TCL","model":"T-PROWD25","price":19900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":96,"brand":"lg","brandName":"เอลจี","model":"IBY11","price":12700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":97,"brand":"lg","brandName":"เอลจี","model":"IBY13","price":12900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"new"},{"id":98,"brand":"lg","brandName":"เอลจี","model":"IKR18","price":17400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":99,"brand":"other","brandName":"ไมเดีย","model":"MSCE10","price":10700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":100,"brand":"other","brandName":"ไมเดีย","model":"MSCE13","price":11400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":101,"brand":"other","brandName":"ไมเดีย","model":"MSNE19","price":16500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":102,"brand":"other","brandName":"ไมเดีย","model":"MSNE25","price":20700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":103,"brand":"other","brandName":"AUX","model":"ASW-09/DIM-1S","price":10700,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":104,"brand":"other","brandName":"AUX","model":"ASW-13/DIM-1S","price":11800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":105,"brand":"other","brandName":"AUX","model":"ASW-18/DIM-1S","price":14800,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":106,"brand":"other","brandName":"AUX","model":"ASW-24/DIM-1S","price":18900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":107,"brand":"other","brandName":"ซัยโจเด็นกิ","model":"SWG12 (ตัวฟอก)","price":11800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":108,"brand":"other","brandName":"ซัยโจเด็นกิ","model":"SWG18","price":15300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":109,"brand":"other","brandName":"ซัยโจเด็นกิ","model":"SWG25","price":19300,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":110,"brand":"other","brandName":"แคนดี้","model":"CE-09PCTF","price":9800,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":111,"brand":"other","brandName":"แคนดี้","model":"CE-12PCTF","price":10900,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":112,"brand":"other","brandName":"แคนดี้","model":"CE-18PCTF","price":12500,"type":"normal","typeLabel":"ธรรมดา","stars":0,"status":""},{"id":113,"brand":"other","brandName":"แคนดี้","model":"CE-09VPCT","price":0,"type":"inverter","typeLabel":"Inverter","stars":0,"status":"wait"},{"id":114,"brand":"other","brandName":"แคนดี้","model":"CE-12VPCT","price":10900,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":115,"brand":"other","brandName":"แคนดี้","model":"CE-18VPCT","price":12500,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""},{"id":116,"brand":"other","brandName":"แคนดี้","model":"CE-24VPCT","price":14400,"type":"inverter","typeLabel":"Inverter","stars":0,"status":""}; 
-        // =========================================================================
+        let products = [];
+        let isAdmin = false;
+        let currentBrand = "ทั้งหมด";
+        const fallbackImg = "https://images.unsplash.com/photo-1620288627223-53302f4e8c74?q=80&w=600&auto=format&fit=crop"; // รูปแอร์พื้นฐานสวยๆ
 
-        let products = JSON.parse(localStorage.getItem('air_products_v2'));
-
-        if (!products || products.length === 0) {
-            products = defaultProducts;
-            localStorage.setItem('air_products_v2', JSON.stringify(products));
+        // ฟังก์ชันช่วยดึงชื่อยี่ห้อจาก Category
+        function extractBrand(category) {
+            if (category.includes('มิตซู') && !category.includes('Heavy')) return 'Mitsubishi';
+            if (category.includes('Mitsubishi Heavy')) return 'Mitsubishi Heavy';
+            if (category.includes('ไดกิ้น')) return 'Daikin';
+            if (category.includes('เซ็นทรัลแอร์')) return 'Central Air';
+            if (category.includes('แคเรีย')) return 'Carrier';
+            if (category.includes('ไฮเออร์')) return 'Haier';
+            if (category.includes('อิมิเน้น')) return 'Eminent';
+            if (category.includes('ฮิตาชิ')) return 'Hitachi';
+            if (category.includes('SINCLAIR')) return 'Sinclair';
+            if (category.includes('TCL')) return 'TCL';
+            if (category.includes('เอลจี')) return 'LG';
+            if (category.includes('ไมเดีย')) return 'Midea';
+            if (category.includes('AUX')) return 'AUX';
+            if (category.includes('ซัยโจ')) return 'Saijo Denki';
+            if (category.includes('แคนดี้')) return 'Candy';
+            return 'อื่นๆ';
         }
 
-        let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        let currentFilter = 'all';
-        let searchQuery = '';
-
-        const productsGrid = document.getElementById('productsGrid');
-        const emptyState = document.getElementById('emptyState');
-        const adminToggle = document.getElementById('adminToggle');
-        const addProductBtn = document.getElementById('addProductBtn');
-        const searchInput = document.getElementById('searchInput');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const editModal = document.getElementById('editModal');
-        const productForm = document.getElementById('productForm');
-
-        const formatPrice = (num) => new Intl.NumberFormat('th-TH').format(num);
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function checkAdminAccess() {
-            if (!isAdmin) {
-                const password = prompt("กรุณาใส่รหัสผ่านเพื่อเข้าสู่โหมดแอดมิน:");
-                if (password === ADMIN_PASSWORD) {
-                    isAdmin = true;
-                    sessionStorage.setItem('isAdmin', 'true');
-                    enableAdminMode();
-                    showToast("เข้าสู่โหมดแอดมินแล้ว");
-                } else if (password !== null) alert("รหัสผ่านไม่ถูกต้อง!");
+        function loadData() {
+            let savedData = localStorage.getItem('boonsom_air_data_v2');
+            if (savedData) {
+                products = JSON.parse(savedData);
             } else {
-                isAdmin = false;
-                sessionStorage.removeItem('isAdmin');
-                disableAdminMode();
-                showToast("ออกจากโหมดแอดมินแล้ว");
+                let idCounter = 1;
+                initialData.forEach(category => {
+                    const brandName = extractBrand(category.cat);
+                    category.items.forEach(item => {
+                        products.push({
+                            id: idCounter++,
+                            brand: brandName,
+                            category: category.cat,
+                            model: item.m,
+                            price: item.p,
+                            btu: "",
+                            room: "",
+                            img: fallbackImg
+                        });
+                    });
+                });
+                saveToLocalStorage();
             }
-        }
-
-        function enableAdminMode() {
-            document.body.classList.add('admin-mode');
-            adminToggle.classList.add('active');
-            addProductBtn.classList.remove('hidden');
+            renderBrands();
             renderProducts();
         }
 
-        function disableAdminMode() {
-            document.body.classList.remove('admin-mode');
-            adminToggle.classList.remove('active');
-            addProductBtn.classList.add('hidden');
-            renderProducts();
+        function saveToLocalStorage() {
+            localStorage.setItem('boonsom_air_data_v2', JSON.stringify(products));
         }
 
-        adminToggle.addEventListener('click', checkAdminAccess);
-
-        function saveProducts() {
-            localStorage.setItem('air_products_v2', JSON.stringify(products));
-        }
-
-        function renderProducts() {
-            const filtered = products.filter(p => {
-                const matchBrand = currentFilter === 'all' || p.brand === currentFilter;
-                const searchLower = searchQuery.toLowerCase();
-                const matchSearch = p.model.toLowerCase().includes(searchLower) || 
-                                    p.brandName.toLowerCase().includes(searchLower) ||
-                                    (p.btu && p.btu.toString().includes(searchLower));
-                return matchBrand && matchSearch;
+        // สร้างปุ่มกรองยี่ห้อ
+        function renderBrands() {
+            const brandContainer = document.getElementById('brand-filters');
+            // หายี่ห้อทั้งหมดแบบไม่ซ้ำกัน
+            const brands = ["ทั้งหมด", ...new Set(products.map(p => p.brand))];
+            
+            brandContainer.innerHTML = '';
+            brands.forEach(brand => {
+                const isActive = brand === currentBrand ? 'active' : 'text-gray-600 border-gray-300 hover:bg-gray-100';
+                const btn = document.createElement('button');
+                btn.className = `brand-btn whitespace-nowrap px-4 py-1.5 rounded-full border text-sm font-medium transition ${isActive}`;
+                btn.innerText = brand;
+                btn.onclick = () => {
+                    currentBrand = brand;
+                    renderBrands(); // วาดปุ่มใหม่เพื่อเปลี่ยนสีปุ่ม active
+                    renderProducts(); // อัพเดทสินค้า
+                };
+                brandContainer.appendChild(btn);
             });
+        }
 
-            if (filtered.length === 0) {
-                productsGrid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+        // แสดงผลสินค้า
+        function renderProducts() {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+
+            // กรองตามยี่ห้อที่เลือก
+            let filteredProducts = products;
+            if (currentBrand !== "ทั้งหมด") {
+                filteredProducts = products.filter(p => p.brand === currentBrand);
+            }
+
+            // จัดกลุ่มตาม Category ย่อย (เช่น Inverter, ธรรมดา)
+            const grouped = filteredProducts.reduce((acc, curr) => {
+                if (!acc[curr.category]) acc[curr.category] = [];
+                acc[curr.category].push(curr);
+                return acc;
+            }, {});
+
+            if(Object.keys(grouped).length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">ไม่พบสินค้าหมวดหมู่นี้</div>`;
                 return;
             }
 
-            emptyState.classList.add('hidden');
-            productsGrid.innerHTML = filtered.map(p => {
-                const badgeClass = p.type === 'normal' ? 'badge-normal' : 
-                                  p.type === 'super' ? 'badge-super' : 'badge-inverter';
-                
-                let statusHtml = '';
-                if(p.status === 'new') statusHtml = '<span class="status-badge status-new">NEW</span>';
-                if(p.status === 'wait') statusHtml = '<span class="status-badge status-wait">รอของ</span>';
-
-                const priceDisplay = p.price > 0 ? `฿${formatPrice(p.price)}` : 'สอบถามราคา';
-                const priceClass = p.price > 0 ? 'price-tag' : 'price-tag no-price';
-
-                const defaultImg = `https://via.placeholder.com/400x300/0f2847/00d4ff?text=${p.brandName}`;
-                const imgSrc = p.imageUrl ? p.imageUrl : defaultImg;
-                
-                // รูปภาพปรับสัดส่วนอัตโนมัติ
-                const imgClass = p.imageUrl ? 'object-cover transition-transform duration-700 group-hover:scale-110' : 'object-contain p-4 sm:p-6 transition-transform duration-700 group-hover:scale-110';
-
-                let specTags = '';
-                if (p.btu || p.roomSize) {
-                    specTags = `<div class="flex flex-wrap gap-1 sm:gap-2 mt-2 sm:mt-3 mb-1">`;
-                    if (p.btu) {
-                        specTags += `<span class="text-[10px] sm:text-xs font-medium bg-cyan-900/40 text-cyan-300 px-2 py-1 rounded border border-cyan-800/50 flex items-center gap-1">
-                            <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            ${p.btu} BTU
-                        </span>`;
-                    }
-                    if (p.roomSize) {
-                        specTags += `<span class="text-[10px] sm:text-xs font-medium bg-emerald-900/40 text-emerald-300 px-2 py-1 rounded border border-emerald-800/50 flex items-center gap-1">
-                            <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                            ${p.roomSize} ตร.ม.
-                        </span>`;
-                    }
-                    specTags += `</div>`;
-                }
-
-                return `
-                    <div class="product-card group" onclick="openEditModal(${p.id})">
-                        <div class="type-badge ${badgeClass}">${p.typeLabel}</div>
-                        
-                        <div class="product-image-container">
-                            <img src="${imgSrc}" class="${imgClass}" alt="${p.model}" loading="lazy">
-                        </div>
-
-                        <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-gray-400 text-xs sm:text-sm font-medium uppercase tracking-wider">${p.brandName}</h3>
-                                <h2 class="text-lg sm:text-xl font-bold text-white mt-1 leading-tight">${p.model}</h2>
-                                ${specTags}
-                            </div>
-                            <div class="flex items-end justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-cyan-900/30">
-                                <div class="${priceClass}">${priceDisplay}</div>
-                                ${statusHtml}
-                            </div>
-                        </div>
-                        <div class="edit-overlay">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                        </div>
+            for (const [category, items] of Object.entries(grouped)) {
+                let catHtml = `
+                    <div class="col-span-full mt-6 mb-2 flex items-center gap-3">
+                        <div class="h-px bg-gray-300 flex-1"></div>
+                        <h2 class="text-xl font-bold text-gray-800 bg-white px-4 py-1 border border-gray-200 rounded-full shadow-sm">${category}</h2>
+                        <div class="h-px bg-gray-300 flex-1"></div>
                     </div>
                 `;
-            }).join('');
+                container.innerHTML += catHtml;
+
+                items.forEach(p => {
+                    let isWait = p.price.includes('รอของ');
+                    let priceClass = isWait ? 'text-orange-500' : 'text-blue-600';
+                    let priceDisplay = isWait ? p.price : `฿${p.price}`;
+                    if(p.price === "-") priceDisplay = "สอบถามราคา";
+
+                    let cardHtml = `
+                        <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden hover:-translate-y-1 hover:shadow-xl transition duration-300 border border-gray-100 group">
+                            <div class="relative h-48 overflow-hidden bg-gray-100 flex items-center justify-center p-4">
+                                <img src="${p.img}" alt="${p.model}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded shadow-sm text-gray-700 border border-gray-100">
+                                    ${p.brand}
+                                </div>
+                            </div>
+                            <div class="p-5 relative">
+                                <h3 class="text-lg font-bold text-gray-800 line-clamp-1" title="${p.model}">${p.model}</h3>
+                                <p class="${priceClass} font-bold text-2xl mt-1 tracking-tight">${priceDisplay}</p>
+                                
+                                <div class="mt-4 space-y-2">
+                                    <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                        <span class="mr-2">⚡</span>
+                                        <span class="flex-1">BTU:</span>
+                                        <span class="font-semibold text-gray-800">${p.btu || '-'}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                        <span class="mr-2">🏠</span>
+                                        <span class="flex-1">ขนาดห้อง:</span>
+                                        <span class="font-semibold text-gray-800">${p.room || '-'}</span>
+                                    </div>
+                                </div>
+                                
+                                ${isAdmin ? `<button onclick="openEditModal(${p.id})" class="mt-5 w-full bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 py-2 rounded-xl font-semibold transition flex justify-center items-center gap-2"><span>✏️</span> แก้ไขข้อมูล (Admin)</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHtml;
+                });
+            }
         }
 
-        function openEditModal(id = null) {
-            if (!isAdmin) return;
-            editModal.classList.add('active');
-            
-            if (id) {
-                document.getElementById('modalTitle').textContent = 'แก้ไขข้อมูลแอร์';
-                const product = products.find(p => p.id === id);
-                document.getElementById('productId').value = product.id;
-                document.getElementById('brandInput').value = product.brand;
-                document.getElementById('brandNameInput').value = product.brandName;
-                document.getElementById('modelInput').value = product.model;
-                document.getElementById('btuInput').value = product.btu || '';
-                document.getElementById('roomSizeInput').value = product.roomSize || '';
-                document.getElementById('priceInput').value = product.price;
-                document.getElementById('typeInput').value = product.type;
-                document.getElementById('typeLabelInput').value = product.typeLabel;
-                document.getElementById('statusInput').value = product.status || '';
-                document.getElementById('imageInput').value = product.imageUrl || '';
+        // ระบบ Admin
+        function toggleAdmin() {
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById('adminBtn').innerHTML = "🔒 เข้าสู่ระบบ";
+                document.getElementById('adminBtn').classList.replace('bg-red-500', 'bg-white/20');
+                renderProducts();
+            } else {
+                document.getElementById('loginModal').classList.add('active');
+                setTimeout(() => document.getElementById('adminPassword').focus(), 100);
+            }
+        }
+
+        function checkPassword() {
+            const pwd = document.getElementById('adminPassword').value;
+            if (pwd === '4321') {
+                isAdmin = true;
+                document.getElementById('adminBtn').innerHTML = "🔓 ออกจากระบบ";
+                document.getElementById('adminBtn').classList.replace('bg-white/20', 'bg-red-500');
+                closeModal('loginModal');
+                document.getElementById('adminPassword').value = '';
+                renderProducts();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // ทำให้กด Enter ในช่องรหัสผ่านได้
+        document.getElementById('adminPassword').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // แก้ไขข้อมูล
+        function openEditModal(id) {
+            const product = products.find(p => p.id === id);
+            if(product) {
+                document.getElementById('editId').value = product.id;
+                document.getElementById('editModel').value = product.model;
+                document.getElementById('editPrice').value = product.price;
+                document.getElementById('editBtu').value = product.btu;
+                document.getElementById('editRoom').value = product.room;
+                document.getElementById('editImg').value = product.img !== fallbackImg ? product.img : '';
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        function saveEdit() {
+            const id = parseInt(document.getElementById('editId').value);
+            const index = products.findIndex(p => p.id === id);
+            if(index !== -1) {
+                products[index].model = document.getElementById('editModel').value;
+                products[index].price = document.getElementById('editPrice').value;
+                products[index].btu = document.getElementById('editBtu').value;
+                products[index].room = document.getElementById('editRoom').value;
                 
-                document.getElementById('deleteBtn').classList.remove('hidden');
-            } else {
-                document.getElementById('modalTitle').textContent = 'เพิ่มแอร์รุ่นใหม่';
-                productForm.reset();
-                document.getElementById('productId').value = '';
-                document.getElementById('priceInput').value = 0;
-                document.getElementById('imageInput').value = '';
-                document.getElementById('deleteBtn').classList.add('hidden');
+                const imgInput = document.getElementById('editImg').value;
+                products[index].img = imgInput ? imgInput : fallbackImg;
+                
+                saveToLocalStorage();
+                renderProducts();
+                closeModal('editModal');
             }
         }
 
-        function closeModal() { editModal.classList.remove('active'); }
-
-        document.getElementById('closeModal').addEventListener('click', closeModal);
-        document.getElementById('cancelBtn').addEventListener('click', closeModal);
-
-        productForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = document.getElementById('productId').value;
-            let imgUrl = document.getElementById('imageInput').value.trim();
-            
-            const newProduct = {
-                id: id ? parseInt(id) : Date.now(),
-                brand: document.getElementById('brandInput').value,
-                brandName: document.getElementById('brandNameInput').value,
-                model: document.getElementById('modelInput').value,
-                btu: document.getElementById('btuInput').value.trim(),
-                roomSize: document.getElementById('roomSizeInput').value.trim(),
-                price: parseFloat(document.getElementById('priceInput').value) || 0,
-                type: document.getElementById('typeInput').value,
-                typeLabel: document.getElementById('typeLabelInput').value,
-                status: document.getElementById('statusInput').value,
-                imageUrl: imgUrl
-            };
-
-            if (id) {
-                const index = products.findIndex(p => p.id === parseInt(id));
-                products[index] = newProduct;
-                showToast("อัปเดตข้อมูลสำเร็จ");
-            } else {
-                products.push(newProduct);
-                showToast("เพิ่มสินค้าสำเร็จ");
-            }
-
-            saveProducts();
-            renderProducts();
-            closeModal();
-        });
-
-        document.getElementById('deleteBtn').addEventListener('click', () => {
-            if(confirm("ต้องการลบสินค้านี้ใช่หรือไม่?")) {
-                const id = document.getElementById('productId').value;
-                products = products.filter(p => p.id !== parseInt(id));
-                saveProducts();
-                renderProducts();
-                closeModal();
-                showToast("ลบสินค้าสำเร็จ");
-            }
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderProducts();
-        });
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.brand;
-                renderProducts();
-            });
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (isAdmin) enableAdminMode();
-            renderProducts();
-        });
+        // เริ่มการทำงาน
+        loadData();
     </script>
 </body>
 </html>
