@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บุญสมบุญสมแอร์เซอร์วิส | ข้อมูลแอร์ครบวงจร</title>
+    <title>บุญสมบุญสมแอร์เซอร์วิส | ระบบจัดการข้อมูลแอร์</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +12,7 @@
         .modal.active { display: flex; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .brand-btn.active { background-color: #1d4ed8; color: white; border-color: #1d4ed8; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3); }
+        .brand-btn.active { background-color: #1d4ed8; color: white; border-color: #1d4ed8; shadow: 0 4px 10px rgba(29, 78, 216, 0.3); }
         .product-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .product-card:hover { transform: translateY(-10px); }
     </style>
@@ -21,7 +21,7 @@
 
     <div id="loader" class="fixed inset-0 bg-white z-[100] flex flex-col justify-center items-center">
         <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 animate-pulse">กำลังดึงข้อมูลแอร์ล่าสุด...</p>
+        <p class="text-slate-500 animate-pulse">กำลังเตรียมระบบจัดการแอร์...</p>
     </div>
 
     <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-xl sticky top-0 z-40">
@@ -29,13 +29,18 @@
             <div class="flex items-center gap-4">
                 <div class="bg-white p-2 rounded-2xl shadow-lg text-3xl">❄️</div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">บุญสมบุญสมแอร์เซอร์วิส</h1>
-                    <p class="text-xs text-blue-100 opacity-80">ศูนย์รวมแอร์บ้านราคาส่ง พร้อมบริการติดตั้ง</p>
+                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">บุญสมบุญสมแอร์</h1>
+                    <p class="text-xs text-blue-100 opacity-80">ระบบจัดการหลังบ้าน</p>
                 </div>
             </div>
-            <button id="adminBtn" onclick="toggleAdmin()" class="bg-white/10 hover:bg-white/30 backdrop-blur-md px-5 py-2 rounded-2xl text-sm font-bold border border-white/20 transition-all active:scale-95">
-                🔒 แอดมิน
-            </button>
+            <div class="flex gap-2">
+                <button id="addBtn" onclick="openAddModal()" class="hidden bg-green-500 hover:bg-green-600 px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition-all active:scale-95">
+                    ➕ เพิ่มรุ่นแอร์
+                </button>
+                <button id="adminBtn" onclick="toggleAdmin()" class="bg-white/10 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-bold border border-white/20 transition-all active:scale-95">
+                    🔒 แอดมิน
+                </button>
+            </div>
         </div>
     </header>
 
@@ -54,57 +59,62 @@
     <div id="editModal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md justify-center items-center z-50 p-4">
         <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-2xl font-bold text-slate-800">🛠️ แก้ไขข้อมูลเครื่องปรับอากาศ</h2>
+                <h2 id="modalTitle" class="text-2xl font-bold text-slate-800">🛠️ จัดการข้อมูลแอร์</h2>
                 <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
             </div>
             <input type="hidden" id="editId">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="md:col-span-2">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">ชื่อรุ่น / รหัสสินค้า</label>
-                    <input type="text" id="editModel" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none bg-slate-50">
-                </div>
-                <div>
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">ราคา (บาท)</label>
-                    <input type="text" id="editPrice" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">ขนาด BTU</label>
-                    <input type="text" id="editBtu" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น 9,200">
-                </div>
-                <div>
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">ขนาดห้อง (ตร.ม.)</label>
-                    <input type="text" id="editRoom" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น 9-14">
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ยี่ห้อ (Brand)</label>
+                    <input type="text" id="editBrand" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none bg-slate-50" placeholder="เช่น Mitsubishi, Daikin">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">ลิงก์รูปภาพ (URL)</label>
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">หมวดหมู่ (Category)</label>
+                    <input type="text" id="editCategory" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none bg-slate-50" placeholder="เช่น มิตซู ธรรมดา, ไดกิ้น Inverter">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ชื่อรุ่น / รหัสสินค้า</label>
+                    <input type="text" id="editModel" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none bg-slate-50 font-bold">
+                </div>
+                <div>
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ราคา (บาท)</label>
+                    <input type="text" id="editPrice" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none font-bold">
+                </div>
+                <div>
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ขนาด BTU</label>
+                    <input type="text" id="editBtu" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น 12,000">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ขนาดห้องที่เหมาะสม (ตร.ม.)</label>
+                    <input type="text" id="editRoom" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น 14-18">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">ลิงก์รูปภาพ (URL)</label>
                     <input type="text" id="editImg" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none text-xs">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="text-xs font-black text-slate-400 uppercase mb-2 block">รายละเอียดแอร์ / จุดเด่น</label>
-                    <textarea id="editDetail" rows="3" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น แถมฟรีท่อน้ำยา 4 เมตร, ระบบ Inverter ประหยัดไฟเบอร์ 5..."></textarea>
+                    <label class="text-xs font-black text-slate-400 uppercase mb-1 block">รายละเอียดเพิ่มเติม / โปรโมชั่น</label>
+                    <textarea id="editDetail" rows="2" class="w-full border-2 border-slate-100 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="เช่น ประหยัดไฟเบอร์ 5, ฟรีล้างแอร์ 1 ปี..."></textarea>
                 </div>
             </div>
             <div class="flex gap-4 mt-10">
                 <button onclick="closeModal('editModal')" class="flex-1 py-4 font-bold text-slate-400">ยกเลิก</button>
-                <button id="saveBtn" onclick="saveEdit()" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition-all active:scale-95">💾 บันทึกข้อมูลทั้งหมด</button>
+                <button id="saveBtn" onclick="saveData()" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition-all active:scale-95">💾 บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
 
     <div id="loginModal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm justify-center items-center z-50 p-4">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-sm text-center">
-            <div class="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔐</div>
-            <h2 class="text-2xl font-extrabold mb-2">ยืนยันตัวตน</h2>
-            <p class="text-slate-400 text-sm mb-8">กรุณาใส่รหัสผ่านเพื่อจัดการร้าน</p>
-            <input type="password" id="adminPassword" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-6 text-center text-2xl tracking-[0.5em] outline-none focus:border-blue-600">
+            <h2 class="text-2xl font-black mb-6">ผู้ดูแลระบบ</h2>
+            <input type="password" id="adminPassword" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-6 text-center text-2xl tracking-[0.5em] outline-none focus:border-blue-600" placeholder="••••">
             <button onclick="checkPassword()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all">เข้าสู่ระบบ</button>
-            <button onclick="closeModal('loginModal')" class="mt-4 text-slate-400 text-sm font-medium">ปิดหน้าต่าง</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAdnDcProI1UFW2a9eGiUJbLYmI7ihM1XQ",
@@ -127,9 +137,7 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "products"));
                 products = [];
-                querySnapshot.forEach((doc) => { 
-                    products.push({ id: doc.id, ...doc.data() }); 
-                });
+                querySnapshot.forEach((doc) => { products.push({ id: doc.id, ...doc.data() }); });
                 document.getElementById('loader').classList.add('hidden');
                 renderBrands();
                 renderProducts();
@@ -178,52 +186,54 @@
                             </div>
                             <div class="p-8 flex-grow flex flex-col">
                                 <h3 class="font-bold text-slate-800 text-lg mb-4 leading-tight min-h-[3rem] line-clamp-2">${p.model}</h3>
-                                
                                 <div class="grid grid-cols-2 gap-3 mb-6">
-                                    <div class="bg-blue-50/50 p-3 rounded-2xl text-center">
-                                        <p class="text-[10px] uppercase font-bold text-blue-400 mb-1">ความเย็น</p>
-                                        <p class="text-sm font-black text-blue-700">${p.btu || '-'} BTU</p>
+                                    <div class="bg-blue-50 p-3 rounded-2xl text-center">
+                                        <p class="text-[10px] uppercase font-bold text-blue-400 mb-1">BTU</p>
+                                        <p class="text-sm font-black text-blue-700">${p.btu || '-'}</p>
                                     </div>
-                                    <div class="bg-emerald-50/50 p-3 rounded-2xl text-center">
-                                        <p class="text-[10px] uppercase font-bold text-emerald-400 mb-1">ขนาดห้อง</p>
-                                        <p class="text-sm font-black text-emerald-700">${p.room || '-'} ตร.ม.</p>
+                                    <div class="bg-emerald-50 p-3 rounded-2xl text-center">
+                                        <p class="text-[10px] uppercase font-bold text-emerald-400 mb-1">ตร.ม.</p>
+                                        <p class="text-sm font-black text-emerald-700">${p.room || '-'}</p>
                                     </div>
                                 </div>
-
-                                ${p.detail ? `<p class="text-xs text-slate-400 mb-6 line-clamp-2 bg-slate-50 p-3 rounded-xl italic">"${p.detail}"</p>` : ''}
-
                                 <div class="mt-auto flex items-end justify-between">
-                                    <div>
-                                        <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">ราคาแนะนำ</p>
-                                        <p class="text-blue-600 font-black text-3xl tracking-tighter">฿${p.price}</p>
-                                    </div>
+                                    <p class="text-blue-600 font-black text-3xl tracking-tighter">฿${p.price}</p>
                                     <div class="bg-slate-100 p-3 rounded-2xl text-slate-400">❄️</div>
                                 </div>
                             </div>
                             ${isAdmin ? `
-                                <div class="px-8 pb-8">
-                                    <button onclick="openEditModal('${p.id}')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-xl shadow-slate-200">🔧 แก้ไขข้อมูลเครื่องนี้</button>
+                                <div class="px-8 pb-8 flex gap-2">
+                                    <button onclick="openEditModal('${p.id}')" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-lg">🔧 แก้ไข</button>
+                                    <button onclick="deleteProduct('${p.id}')" class="w-12 bg-red-100 text-red-600 py-3 rounded-xl font-bold text-xs transition-all active:scale-95 hover:bg-red-200">🗑️</button>
                                 </div>` : ''}
                         </div>`;
                 });
             }
         }
 
-        window.toggleAdmin = () => isAdmin ? location.reload() : document.getElementById('loginModal').classList.add('active');
-        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-        window.checkPassword = () => {
-            if(document.getElementById('adminPassword').value === '4321') {
-                isAdmin = true; closeModal('loginModal'); 
-                document.getElementById('adminBtn').innerText = "🔓 ออกจากระบบ";
-                document.getElementById('adminBtn').classList.replace('bg-white/10', 'bg-red-500');
-                renderProducts();
-            } else { alert('รหัสผ่านไม่ถูกต้อง!'); }
+        // ระบบเพิ่มข้อมูลใหม่
+        window.openAddModal = () => {
+            document.getElementById('modalTitle').innerText = "➕ เพิ่มรุ่นแอร์ใหม่";
+            document.getElementById('editId').value = "";
+            document.getElementById('editBrand').value = "";
+            document.getElementById('editCategory').value = "";
+            document.getElementById('editModel').value = "";
+            document.getElementById('editPrice').value = "";
+            document.getElementById('editImg').value = "";
+            document.getElementById('editBtu').value = "";
+            document.getElementById('editRoom').value = "";
+            document.getElementById('editDetail').value = "";
+            document.getElementById('editModal').classList.add('active');
         };
 
+        // ระบบแก้ไขข้อมูลเดิม
         window.openEditModal = (id) => {
             const p = products.find(prod => prod.id === id);
             if(p) {
+                document.getElementById('modalTitle').innerText = "✏️ แก้ไขข้อมูลแอร์";
                 document.getElementById('editId').value = p.id;
+                document.getElementById('editBrand').value = p.brand || "";
+                document.getElementById('editCategory').value = p.category || "";
                 document.getElementById('editModel').value = p.model;
                 document.getElementById('editPrice').value = p.price;
                 document.getElementById('editImg').value = p.img || '';
@@ -234,22 +244,56 @@
             }
         };
 
-        window.saveEdit = async () => {
+        // ระบบลบข้อมูล
+        window.deleteProduct = async (id) => {
+            if (confirm('ยืนยันว่าจะลบข้อมูลแอร์รุ่นนี้? (ไม่สามารถกู้คืนได้)')) {
+                try {
+                    await deleteDoc(doc(db, "products", id));
+                    alert('ลบข้อมูลเรียบร้อยแล้ว');
+                    loadData();
+                } catch (e) { alert('ลบไม่สำเร็จ'); }
+            }
+        };
+
+        // ระบบบันทึก (ทั้งเพิ่มและแก้ไข)
+        window.saveData = async () => {
             const id = document.getElementById('editId').value;
             const btn = document.getElementById('saveBtn');
-            btn.innerText = "⏳ กำลังบันทึกข้อมูล..."; btn.disabled = true;
+            const data = {
+                brand: document.getElementById('editBrand').value,
+                category: document.getElementById('editCategory').value,
+                model: document.getElementById('editModel').value,
+                price: document.getElementById('editPrice').value,
+                img: document.getElementById('editImg').value,
+                btu: document.getElementById('editBtu').value,
+                room: document.getElementById('editRoom').value,
+                detail: document.getElementById('editDetail').value
+            };
+
+            if (!data.brand || !data.model || !data.price) return alert("กรุณากรอก ยี่ห้อ, รุ่น และราคา ให้ครบ");
+
+            btn.innerText = "⏳ กำลังบันทึก..."; btn.disabled = true;
             try {
-                await updateDoc(doc(db, "products", id), {
-                    model: document.getElementById('editModel').value,
-                    price: document.getElementById('editPrice').value,
-                    img: document.getElementById('editImg').value,
-                    btu: document.getElementById('editBtu').value,
-                    room: document.getElementById('editRoom').value,
-                    detail: document.getElementById('editDetail').value
-                });
+                if (id) {
+                    await updateDoc(doc(db, "products", id), data);
+                } else {
+                    await addDoc(collection(db, "products"), data);
+                }
                 await loadData(); closeModal('editModal');
-            } catch (e) { alert('เกิดข้อผิดพลาดในการบันทึก'); }
-            finally { btn.innerText = "💾 บันทึกข้อมูลทั้งหมด"; btn.disabled = false; }
+            } catch (e) { alert('เกิดข้อผิดพลาด'); }
+            finally { btn.innerText = "💾 บันทึกข้อมูล"; btn.disabled = false; }
+        };
+
+        window.toggleAdmin = () => isAdmin ? location.reload() : document.getElementById('loginModal').classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        window.checkPassword = () => {
+            if(document.getElementById('adminPassword').value === '4321') {
+                isAdmin = true; closeModal('loginModal'); 
+                document.getElementById('adminBtn').innerText = "🔓 ออกจากระบบ";
+                document.getElementById('adminBtn').classList.replace('bg-white/10', 'bg-red-500');
+                document.getElementById('addBtn').classList.remove('hidden'); // โชว์ปุ่มเพิ่มแอร์
+                renderProducts();
+            } else { alert('รหัสผ่านไม่ถูกต้อง!'); }
         };
 
         loadData();
