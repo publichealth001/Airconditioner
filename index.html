@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บุญสมบุญสมแอร์ | ระบบจัดการข้อมูล (Multi-Photos)</title>
+    <title>บุญสมบุญสมแอร์ | ระบบจัดการข้อมูล (Full Support)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -27,14 +27,10 @@
         .brand-btn.active { background-color: #1d4ed8; color: white; border-color: #1d4ed8; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3); }
         .product-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        /* สไตล์สำหรับปุ่มเลื่อนรูป */
         .img-nav-btn {
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(4px);
-            width: 32px; height: 32px;
-            display: flex; items-center: center; justify-content: center;
-            border-radius: 50%; border: 1px solid #eee;
-            transition: all 0.2s; opacity: 0;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);
+            width: 32px; height: 32px; display: flex; items-center: center; justify-content: center;
+            border-radius: 50%; border: 1px solid #eee; transition: all 0.2s; opacity: 0;
         }
         .product-card:hover .img-nav-btn { opacity: 1; }
         .img-nav-btn:hover { background: white; transform: scale(1.1); }
@@ -44,7 +40,7 @@
 
     <div id="loader" class="fixed inset-0 bg-white z-[100] flex flex-col justify-center items-center">
         <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 animate-pulse">กำลังเตรียมข้อมูลแอร์...</p>
+        <p class="text-slate-500">กำลังโหลดข้อมูลแอร์...</p>
     </div>
 
     <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-xl sticky top-0 z-40">
@@ -53,7 +49,7 @@
                 <div class="bg-white p-2 rounded-2xl shadow-lg text-3xl">❄️</div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-extrabold tracking-tight leading-none">บุญสมบุญสมแอร์</h1>
-                    <p class="text-[10px] text-blue-100 opacity-80 uppercase tracking-widest mt-1">Multi-Image Management</p>
+                    <p class="text-[10px] text-blue-100 opacity-80 uppercase tracking-widest mt-1">Professional Service</p>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -91,13 +87,9 @@
                 <div><label class="text-xs font-black text-slate-400 mb-1 block">ราคา</label><input type="text" id="editPrice" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 font-bold"></div>
                 <div><label class="text-xs font-black text-slate-400 mb-1 block">BTU</label><input type="text" id="editBtu" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500"></div>
                 <div class="md:col-span-2"><label class="text-xs font-black text-slate-400 mb-1 block">ขนาดห้อง (ตร.ม.)</label><input type="text" id="editRoom" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500"></div>
+                <div class="md:col-span-2"><label class="text-xs font-black text-slate-400 mb-1 block">ลิงก์รูปภาพ (ขึ้นบรรทัดใหม่เพื่อใส่หลายรูป)</label><textarea id="editImgs" rows="4" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 text-xs"></textarea></div>
                 
-                <div class="md:col-span-2">
-                    <label class="text-xs font-black text-slate-400 mb-1 block">ลิงก์รูปภาพ (ใส่หลายลิงก์ได้โดยขึ้นบรรทัดใหม่ หรือคั่นด้วยคอมม่า)</label>
-                    <textarea id="editImgs" rows="4" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 text-xs" placeholder="https://image1.jpg&#10;https://image2.jpg"></textarea>
-                </div>
-                
-                <div class="md:col-span-2"><label class="text-xs font-black text-slate-400 mb-1 block">รายละเอียดเพิ่มเติม</label><textarea id="editDetail" rows="2" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500"></textarea></div>
+                <div class="md:col-span-2"><label class="text-xs font-black text-slate-400 mb-1 block">รายละเอียดเพิ่มเติม / โปรโมชั่น</label><textarea id="editDetail" rows="3" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="เช่น แถมฟรีท่อน้ำยา, รับประกัน 10 ปี..."></textarea></div>
             </div>
             <div class="flex gap-4 mt-10">
                 <button onclick="closeModal('editModal')" class="flex-1 py-4 font-bold text-slate-400">ยกเลิก</button>
@@ -133,7 +125,7 @@
         let products = [];
         let isAdmin = false;
         let currentBrand = "ทั้งหมด";
-        let productImagesState = {}; // เก็บสถานะว่าแอร์แต่ละรุ่นกำลังโชว์รูปที่เท่าไหร่
+        let productImagesState = {}; 
         const fallbackImg = "https://images.unsplash.com/photo-1620288627223-53302f4e8c74?q=80&w=600";
 
         async function loadData() {
@@ -168,26 +160,18 @@
 
         window.setBrand = (brand) => { currentBrand = brand; renderBrands(); renderProducts(); };
 
-        // ฟังก์ชันสลับรูป
         window.changeImg = (prodId, direction) => {
             const product = products.find(p => p.id === prodId);
             if (!product || !product.imgs || product.imgs.length <= 1) return;
-
             let currentIndex = productImagesState[prodId] || 0;
             currentIndex += direction;
-
             if (currentIndex < 0) currentIndex = product.imgs.length - 1;
             if (currentIndex >= product.imgs.length) currentIndex = 0;
-
             productImagesState[prodId] = currentIndex;
-            
-            // อัปเดตรูปเฉพาะการ์ดนั้น
             const imgElement = document.getElementById(`img-${prodId}`);
             const counterElement = document.getElementById(`count-${prodId}`);
-            
             let rawUrl = product.imgs[currentIndex];
             let proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawUrl)}&w=600&h=450&fit=contain&trim=15&output=webp`;
-            
             imgElement.src = proxyUrl;
             counterElement.innerText = `${currentIndex + 1} / ${product.imgs.length}`;
         };
@@ -210,15 +194,9 @@
                 </div>`;
                 
                 items.forEach(p => {
-                    // จัดการข้อมูลรูปภาพ (รองรับทั้งฟิลด์ img เดิม และ imgs ใหม่)
-                    let imgList = [];
-                    if (p.imgs && Array.isArray(p.imgs)) imgList = p.imgs;
-                    else if (p.img) imgList = [p.img];
-                    else imgList = [fallbackImg];
-                    
-                    p.imgs = imgList; // เก็บไว้ใน object p เพื่อให้ changeImg เรียกใช้ง่ายๆ
+                    let imgList = p.imgs && Array.isArray(p.imgs) ? p.imgs : (p.img ? [p.img] : [fallbackImg]);
+                    p.imgs = imgList; 
                     const currentIndex = productImagesState[p.id] || 0;
-                    
                     let displayImg = imgList[currentIndex];
                     if (displayImg.startsWith('http') && !displayImg.includes('firebasestorage')) {
                         displayImg = `https://wsrv.nl/?url=${encodeURIComponent(displayImg)}&w=600&h=450&fit=contain&trim=15&output=webp`;
@@ -227,37 +205,34 @@
                     container.innerHTML += `
                         <div class="product-card bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col group relative">
                             <div class="h-64 bg-slate-50 flex items-center justify-center p-8 relative overflow-hidden">
-                                <img id="img-${p.id}" src="${displayImg}" onerror="this.src='${fallbackImg}'" 
-                                     class="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-500">
-                                
+                                <img id="img-${p.id}" src="${displayImg}" onerror="this.src='${fallbackImg}'" class="max-h-full max-w-full object-contain mix-blend-multiply">
                                 <span class="absolute top-6 left-6 bg-blue-600 text-white px-4 py-1 rounded-xl text-[10px] font-black uppercase shadow-lg">${p.brand}</span>
-                                
                                 ${imgList.length > 1 ? `
                                     <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center pointer-events-none">
                                         <button onclick="changeImg('${p.id}', -1)" class="img-nav-btn pointer-events-auto shadow-md">❮</button>
                                         <button onclick="changeImg('${p.id}', 1)" class="img-nav-btn pointer-events-auto shadow-md">❯</button>
                                     </div>
-                                    <div id="count-${p.id}" class="absolute bottom-4 right-6 bg-black/10 px-2 py-1 rounded-lg text-[9px] font-bold text-slate-500">
-                                        ${currentIndex + 1} / ${imgList.length}
-                                    </div>
+                                    <div id="count-${p.id}" class="absolute bottom-4 right-6 bg-black/10 px-2 py-1 rounded-lg text-[9px] font-bold text-slate-500">${currentIndex + 1} / ${imgList.length}</div>
                                 ` : ''}
                             </div>
-
                             <div class="p-8 flex-grow flex flex-col">
                                 <h3 class="font-bold text-slate-800 text-lg mb-4 leading-tight min-h-[3rem] line-clamp-2">${p.model}</h3>
-                                <div class="grid grid-cols-2 gap-2 mb-6">
-                                    <div class="bg-blue-50 p-3 rounded-2xl text-center"><p class="text-[10px] font-bold text-blue-400">BTU</p><p class="text-sm font-black text-blue-700">${p.btu || '-'}</p></div>
-                                    <div class="bg-emerald-50 p-3 rounded-2xl text-center"><p class="text-[10px] font-bold text-emerald-400">ตร.ม.</p><p class="text-sm font-black text-emerald-700">${p.room || '-'}</p></div>
+                                <div class="grid grid-cols-2 gap-2 mb-4">
+                                    <div class="bg-blue-50 p-3 rounded-2xl text-center"><p class="text-[10px] font-bold text-blue-400 uppercase">BTU</p><p class="text-sm font-black text-blue-700">${p.btu || '-'}</p></div>
+                                    <div class="bg-emerald-50 p-3 rounded-2xl text-center"><p class="text-[10px] font-bold text-emerald-400 uppercase">ตร.ม.</p><p class="text-sm font-black text-emerald-700">${p.room || '-'}</p></div>
                                 </div>
+                                
+                                ${p.detail ? `<p class="text-xs text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100 italic line-clamp-3">"${p.detail}"</p>` : ''}
+
                                 <div class="mt-auto flex justify-between items-end">
                                     <p class="text-blue-600 font-black text-3xl tracking-tighter">฿${p.price}</p>
                                     <div class="bg-slate-100 p-3 rounded-2xl">❄️</div>
                                 </div>
                             </div>
                             ${isAdmin ? `
-                                <div class="px-8 pb-8 flex gap-2 mt-2">
-                                    <button onclick="openEditModal('${p.id}')" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold text-xs transition-all active:scale-95">🔧 แก้ไข</button>
-                                    <button onclick="deleteProduct('${p.id}')" class="w-12 bg-red-100 text-red-600 py-3 rounded-xl hover:bg-red-200 transition-all active:scale-95">🗑️</button>
+                                <div class="px-8 pb-8 flex gap-2">
+                                    <button onclick="openEditModal('${p.id}')" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold text-xs">🔧 แก้ไข</button>
+                                    <button onclick="deleteProduct('${p.id}')" class="w-12 bg-red-100 text-red-600 py-3 rounded-xl hover:bg-red-200">🗑️</button>
                                 </div>` : ''}
                         </div>`;
                 });
@@ -282,13 +257,7 @@
                 document.getElementById('editCategory').value = p.category || "";
                 document.getElementById('editModel').value = p.model;
                 document.getElementById('editPrice').value = p.price;
-                
-                // แปลง Array กลับเป็น string เพื่อแสดงใน textarea
-                let imgText = "";
-                if (p.imgs) imgText = p.imgs.join('\n');
-                else if (p.img) imgText = p.img;
-                
-                document.getElementById('editImgs').value = imgText;
+                document.getElementById('editImgs').value = p.imgs ? p.imgs.join('\n') : (p.img || "");
                 document.getElementById('editBtu').value = p.btu || '';
                 document.getElementById('editRoom').value = p.room || '';
                 document.getElementById('editDetail').value = p.detail || '';
@@ -299,22 +268,17 @@
         window.saveData = async () => {
             const id = document.getElementById('editId').value;
             const btn = document.getElementById('saveBtn');
-            
-            // จัดการแยกลิงก์รูปภาพจาก textarea
-            const rawImgInput = document.getElementById('editImgs').value;
-            const imgArray = rawImgInput.split(/[\n,]+/).map(url => url.trim()).filter(url => url !== "");
-
+            const imgArray = document.getElementById('editImgs').value.split(/[\n,]+/).map(url => url.trim()).filter(url => url !== "");
             const data = {
                 brand: document.getElementById('editBrand').value,
                 category: document.getElementById('editCategory').value,
                 model: document.getElementById('editModel').value,
                 price: document.getElementById('editPrice').value,
-                imgs: imgArray, // บันทึกเป็น Array
+                imgs: imgArray,
                 btu: document.getElementById('editBtu').value,
                 room: document.getElementById('editRoom').value,
                 detail: document.getElementById('editDetail').value
             };
-
             btn.innerText = "⏳ กำลังบันทึก..."; btn.disabled = true;
             try {
                 if (id) await updateDoc(doc(db, "products", id), data);
