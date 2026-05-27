@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Money 💖</title>
+    <title>My Money Cloud 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* CSS: สไตล์ iOS 26 น่ารัก ลื่นไหล มินิมอล */
+        /* CSS: สไตล์ iOS น่ารัก ลื่นไหล มินิมอล และ Responsive */
         :root {
             --bg-color: #f7f9fc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -115,7 +115,6 @@
             transform: scale(0.95);
         }
 
-        /* ส่วนหัวข้อประวัติและตัวเลือกเดือน */
         .history-header {
             display: flex;
             justify-content: space-between;
@@ -146,7 +145,6 @@
             border-radius: 10px;
         }
 
-        /* สไตล์ไอเทมรายการประวัติ */
         .item {
             display: flex;
             justify-content: space-between;
@@ -164,7 +162,6 @@
         .item.plus { border-left: 6px solid var(--income); }
         .item.minus { border-left: 6px solid var(--expense); }
 
-        /* แอนิเมชันตอนลบ */
         .item.fade-out {
             opacity: 0;
             transform: scale(0.9) translateY(-10px);
@@ -182,29 +179,11 @@
             padding-right: 10px;
         }
 
-        .item-note {
-            word-break: break-word;
-            font-weight: 400;
-        }
+        .item-note { word-break: break-word; font-weight: 400; }
+        .item-date { font-size: 11px; color: #a0a5ba; margin-top: 2px; }
+        .item-right { display: flex; align-items: center; gap: 12px; }
+        .item-amount { font-weight: 600; white-space: nowrap; }
 
-        .item-date {
-            font-size: 11px;
-            color: #a0a5ba;
-            margin-top: 2px;
-        }
-
-        .item-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .item-amount {
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        /* ปุ่มลบสไตล์ iOS จิ้มแล้วนุ่มๆ */
         .delete-btn {
             background: none;
             border: none;
@@ -220,20 +199,9 @@
             margin-bottom: 0;
         }
         
-        .delete-btn:hover {
-            color: #ff5c5c;
-        }
-
-        .delete-btn:active {
-            transform: scale(0.8);
-        }
-
-        .no-data {
-            text-align: center;
-            color: #a0a5ba;
-            padding: 20px;
-            font-size: 14px;
-        }
+        .delete-btn:hover { color: #ff5c5c; }
+        .delete-btn:active { transform: scale(0.8); }
+        .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(15px); }
@@ -253,7 +221,7 @@
 <body>
 
     <div class="container">
-        <h1>My Money 💸</h1>
+        <h1>My Money Cloud 💸</h1>
         
         <div class="balance-card">
             <div id="balance-title">ยอดเงินคงเหลือ (ทั้งหมด)</div>
@@ -283,10 +251,29 @@
         </div>
 
         <ul class="history-list" id="list">
-            </ul>
+            <div class="no-data">กำลังเชื่อมต่อคลาวด์... 🚀</div>
+        </ul>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // คอนฟิกูเรชันโปรเจกต์ของคุณ boonsomair-3f5b0
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdnDcProI1UFW2a9eGiUJbLYmI7ihM1XQ",
+            authDomain: "boonsomair-3f5b0.firebaseapp.com",
+            projectId: "boonsomair-3f5b0",
+            storageBucket: "boonsomair-3f5b0.firebasestorage.app",
+            messagingSenderId: "831800219771",
+            appId: "1:831800219771:web:97243e82b452a14e0a2ade"
+        };
+
+        // Initialize Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const transactionsRef = collection(db, "transactions");
+
         const form = document.getElementById('transaction-form');
         const balanceDisplay = document.getElementById('balance');
         const balanceTitle = document.getElementById('balance-title');
@@ -294,7 +281,7 @@
         const datalist = document.getElementById('note-suggestions');
         const monthFilter = document.getElementById('month-filter');
 
-        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let transactions = [];
 
         const defaultSuggestions = [
             "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
@@ -302,7 +289,6 @@
             "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
         ];
 
-        // ฟังก์ชันอัปเดตคำเดาอัตโนมัติ
         function updateSuggestions() {
             datalist.innerHTML = '';
             const pastNotes = transactions.map(t => t.note);
@@ -314,22 +300,19 @@
             });
         }
 
-        // ฟังก์ชันอัปเดตตัวเลือกเดือนใน Dropdown (ดึงมาจากวันที่มีการคีย์จริง)
         function updateMonthFilterOptions() {
             const currentSelection = monthFilter.value;
             monthFilter.innerHTML = '<option value="all">ทั้งหมด 📅</option>';
             
-            // ดึงปี-เดือนที่ไม่ซ้ำกันออกมา
             const months = transactions.map(t => {
                 const d = new Date(t.date);
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             });
-            const uniqueMonths = [...new Set(months)].sort().reverse(); // เอาเดือนล่าสุดขึ้นก่อน
+            const uniqueMonths = [...new Set(months)].sort().reverse();
 
             uniqueMonths.forEach(m => {
                 const [year, month] = m.split('-');
                 const dateObj = new Date(year, month - 1);
-                // แปลงเป็นชื่อเดือนภาษาไทยย่อ เช่น ม.ค. 2026
                 const monthName = dateObj.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
                 
                 const option = document.createElement('option');
@@ -338,7 +321,6 @@
                 monthFilter.appendChild(option);
             });
 
-            // ตรวจสอบว่าค่าที่เคยเลือกยังอยู่ไหม ถ้ามีก็ให้เลือกค่าเดิม
             if ([...monthFilter.options].some(o => o.value === currentSelection)) {
                 monthFilter.value = currentSelection;
             } else {
@@ -346,13 +328,11 @@
             }
         }
 
-        // ฟังก์ชันหลักในการแสดงผลหน้าจอ
         function updateUI() {
             list.innerHTML = '';
             let total = 0;
-            const selectedMonth = monthFilter.value; // ค่าเดือนที่เลือก 'all' หรือ 'YYYY-MM'
+            const selectedMonth = monthFilter.value;
 
-            // กรองรายการตามเดือนที่เลือก
             const filteredTransactions = transactions.filter(t => {
                 if (selectedMonth === 'all') return true;
                 const d = new Date(t.date);
@@ -364,7 +344,6 @@
                 list.innerHTML = '<div class="no-data">ไม่มีรายการของเดือนนี้ 🍩</div>';
             }
 
-            // แสดงรายการประวัติ
             filteredTransactions.forEach(t => {
                 if (t.type === 'plus') total += t.amount;
                 else total -= t.amount;
@@ -374,7 +353,7 @@
 
                 const li = document.createElement('li');
                 li.classList.add('item', t.type);
-                li.setAttribute('data-id', t.id); // ใส่ ID ไว้ใช้ตอนลบ
+                li.setAttribute('data-id', t.id); 
                 li.innerHTML = `
                     <div class="item-details">
                         <span class="item-note">${t.note}</span>
@@ -384,13 +363,20 @@
                         <span class="item-amount" style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'};">
                             ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                         </span>
-                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">🗑️</button>
+                        <button class="delete-btn" data-delete-id="${t.id}">🗑️</button>
                     </div>
                 `;
-                list.appendChild(li); // แสดงจากใหม่ไปเก่าตามลำดับ Array ที่กลับไว้ หรือใช้วิธีดันเข้าบนสุด
+                list.appendChild(li);
             });
 
-            // ปรับเปลี่ยนคำอธิบายยอดเงินให้สอดคล้องกับตัวกรอง
+            // ผูก Event Listener ให้ปุ่มลบทุกปุ่ม
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-delete-id');
+                    deleteTransaction(id);
+                });
+            });
+
             if (selectedMonth === 'all') {
                 balanceTitle.innerText = "ยอดเงินคงเหลือ (ทั้งหมด)";
             } else {
@@ -400,51 +386,58 @@
             }
 
             balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            
             updateSuggestions();
         }
 
-        // ฟังก์ชันลบรายการแบบมีแอนิเมชันนุ่มๆ
-        window.deleteTransaction = function(id) {
+        // ฟังก์ชันลบรายการแบบ Realtime ออกจาก Cloud
+        async function deleteTransaction(id) {
             const itemElement = document.querySelector(`[data-id="${id}"]`);
-            
             if (itemElement) {
-                // ใส่แอนิเมชันสไตล์ iOS ก่อนลบจริง
                 itemElement.classList.add('fade-out');
-                
-                // รอให้แอนิเมชันเล่นจบ (0.3 วินาที) แล้วค่อยลบจากข้อมูลจริง
-                setTimeout(() => {
-                    transactions = transactions.filter(t => t.id !== id);
-                    localStorage.setItem('transactions', JSON.stringify(transactions));
-                    updateMonthFilterOptions();
-                    updateUI();
+                setTimeout(async () => {
+                    try {
+                        await deleteDoc(doc(db, "transactions", id));
+                    } catch (error) {
+                        console.error("Error deleting document: ", error);
+                    }
                 }, 300);
             }
-        };
+        }
 
-        // เมื่อกด Submit ฟอร์มบันทึกข้อมูล
-        form.addEventListener('submit', function(e) {
+        // ดักฟังการอัปเดตข้อมูลบน Firebase แบบ Realtime (เปิดคอมคู่กับมือถือ ข้อมูลจะเด้งพร้อมกันทันที)
+        const q = query(transactionsRef, orderBy("date", "desc"));
+        onSnapshot(q, (snapshot) => {
+            transactions = [];
+            snapshot.forEach((doc) => {
+                transactions.push({ id: doc.id, ...doc.data() });
+            });
+            updateMonthFilterOptions();
+            updateUI();
+        });
+
+        // เมื่อผู้ใช้กดยืนยันบันทึกรายการ
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const type = document.getElementById('type').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const note = document.getElementById('note').value;
 
-            // บันทึกเวลาปัจจุบันลงไปด้วยเพื่อใช้แยกเดือน
-            transactions.unshift({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-
-            form.reset();
-            updateMonthFilterOptions();
-            updateUI();
+            try {
+                await addDoc(transactionsRef, {
+                    type,
+                    amount,
+                    note,
+                    date: new Date().toISOString()
+                });
+                form.reset();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("เกิดข้อผิดพลาด! ลองตรวจสอบ Firebase Rules ของคุณอีกครั้งนะคราบบบ");
+            }
         });
 
-        // เมื่อมีการเปลี่ยนตัวกรองเดือนใน Dropdown
         monthFilter.addEventListener('change', updateUI);
-
-        // รันครั้งแรกตอนโหลดหน้าเว็บ
-        updateMonthFilterOptions();
-        updateUI();
     </script>
 </body>
 </html>
