@@ -6,7 +6,7 @@
     <title>My Money 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* CSS: แต่งหน้าตาให้คิวท์และลื่นไหล */
+        /* CSS: แต่งหน้าตาให้คิวท์ ลื่นไหล และ Responsive */
         :root {
             --bg-color: #f7f9fc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -16,12 +16,18 @@
             --text-dark: #4a4e69;
         }
 
+        /* รีเซ็ตค่าขอบทุกอย่างให้คำนวณง่ายขึ้น */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Prompt', sans-serif;
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
             color: var(--text-dark);
-            margin: 0;
-            padding: 20px;
+            padding: 15px; /* ลด padding ลงนิดหน่อยเผื่อจอมือถือ */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,19 +36,19 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px; /* ขยาย max-width ให้ดูสบายตาบนจอใหญ่ */
             background: var(--card-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-radius: 35px;
-            padding: 30px;
+            padding: 35px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
         h1 {
             text-align: center;
-            font-size: 24px;
-            margin-top: 0;
+            font-size: 26px;
+            margin-bottom: 20px;
         }
 
         .balance-card {
@@ -57,18 +63,27 @@
         .balance-amount {
             font-size: 36px;
             font-weight: 600;
-            margin: 10px 0;
+            margin: 10px 0 0 0;
         }
 
         .form-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 15px;
+        }
+
+        /* ให้ select และ input แบ่งสัดส่วนกันสวยงาม */
+        #type {
+            flex: 1; /* กินพื้นที่ 1 ส่วน */
+        }
+
+        #amount {
+            flex: 1.5; /* กินพื้นที่ 1.5 ส่วน (ยาวกว่า select นิดหน่อย) */
         }
 
         input, select {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border: none;
             border-radius: 18px;
             background: #f0f2f5;
@@ -76,7 +91,6 @@
             font-size: 16px;
             outline: none;
             transition: 0.3s ease;
-            box-sizing: border-box;
         }
 
         input:focus, select:focus {
@@ -84,29 +98,36 @@
             box-shadow: 0 0 0 2px var(--primary);
         }
 
+        #note {
+            margin-bottom: 20px;
+        }
+
         button {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border: none;
             border-radius: 18px;
             background: var(--primary);
             color: white;
             font-family: 'Prompt', sans-serif;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         button:active {
-            transform: scale(0.95); /* แอนิเมชันปุ่มบุ๋มลงไปแบบ iOS */
+            transform: scale(0.95);
+        }
+
+        h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
         }
 
         .history-list {
             list-style: none;
-            padding: 0;
-            margin: 0;
             max-height: 250px;
             overflow-y: auto;
         }
@@ -122,20 +143,54 @@
         .item {
             display: flex;
             justify-content: space-between;
-            padding: 15px;
+            align-items: center;
+            padding: 16px;
             background: white;
             border-radius: 20px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             animation: slideIn 0.3s ease;
+            font-size: 15px;
         }
 
-        .item.plus { border-left: 5px solid var(--income); }
-        .item.minus { border-left: 5px solid var(--expense); }
+        .item.plus { border-left: 6px solid var(--income); }
+        .item.minus { border-left: 6px solid var(--expense); }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 📱 โหมดสำหรับมือถือ (หน้าจอแคบกว่า 480px) */
+        @media screen and (max-width: 480px) {
+            .container {
+                padding: 25px 20px; /* ลดขอบด้านข้างลงให้มีพื้นที่พิมพ์มากขึ้น */
+                border-radius: 30px;
+            }
+
+            .balance-amount {
+                font-size: 30px; /* ลดขนาดตัวเลขยอดเงินลงนิดหน่อยไม่ให้ล้น */
+            }
+
+            .form-group {
+                flex-direction: column; /* จับรายรับ-รายจ่าย และ จำนวนเงิน เรียงซ้อนกันบนจอแคบมากๆ */
+                gap: 10px;
+            }
+
+            #type, #amount {
+                flex: none;
+                width: 100%;
+            }
+
+            input, select, button {
+                padding: 14px;
+                font-size: 15px;
+            }
+
+            .item {
+                padding: 14px;
+                font-size: 14px; /* ลดฟอนต์ประวัติลงให้แสดงบนจอเล็กได้ครบ */
+            }
         }
     </style>
 </head>
@@ -155,9 +210,9 @@
                     <option value="plus">รายรับ 📥</option>
                     <option value="minus">รายจ่าย 📤</option>
                 </select>
-                <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1">
+                <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1" step="any">
             </div>
-            <input type="text" id="note" placeholder="จดไว้หน่อยว่าค่าอะไร..." required style="margin-bottom: 15px;">
+            <input type="text" id="note" placeholder="จดไว้หน่อยว่าค่าอะไร..." required>
             <button type="submit">บันทึกข้อมูล ✨</button>
         </form>
 
@@ -167,60 +222,49 @@
     </div>
 
     <script>
-        // JavaScript: สมองของเว็บ
         const form = document.getElementById('transaction-form');
         const balanceDisplay = document.getElementById('balance');
         const list = document.getElementById('list');
 
-        // ดึงข้อมูลเก่าจาก Local Storage (ถ้ามี) หรือสร้าง Array ว่าง
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-        // ฟังก์ชันอัปเดตหน้าจอ
         function updateUI() {
             list.innerHTML = '';
             let total = 0;
 
             transactions.forEach(t => {
-                // คำนวณยอดรวม
                 if (t.type === 'plus') total += t.amount;
                 else total -= t.amount;
 
-                // สร้างกล่องประวัติ
                 const li = document.createElement('li');
                 li.classList.add('item', t.type);
                 li.innerHTML = `
-                    <span>${t.note}</span>
-                    <span style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'}; font-weight: 600;">
-                        ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString()}
+                    <span style="flex: 1; word-break: break-word; padding-right: 10px;">${t.note}</span>
+                    <span style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'}; font-weight: 600; white-space: nowrap;">
+                        ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </span>
                 `;
-                list.prepend(li); // เอาของใหม่ไว้บนสุด
+                list.prepend(li);
             });
 
-            // อัปเดตยอดคงเหลือ
-            balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
-        // เมื่อกดปุ่มบันทึก
         form.addEventListener('submit', function(e) {
-            e.preventDefault(); // ป้องกันเว็บรีเฟรช
+            e.preventDefault();
 
             const type = document.getElementById('type').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const note = document.getElementById('note').value;
 
-            // เก็บข้อมูลลง Array
             transactions.push({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
 
-            // สั่งให้เบราว์เซอร์จำข้อมูลไว้ (รีเฟรชแล้วไม่หาย)
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
-            // เคลียร์ช่องกรอกข้อมูล และอัปเดตหน้าจอ
             form.reset();
             updateUI();
         });
 
-        // โหลดข้อมูลตอนเปิดเว็บครั้งแรก
         updateUI();
     </script>
 </body>
