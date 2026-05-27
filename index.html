@@ -93,6 +93,16 @@
             box-shadow: 0 0 0 2px var(--primary);
         }
 
+        /* เอฟเฟกต์กระพริบเบาๆ เวลา Auto-detect ทำงาน */
+        .auto-changed {
+            animation: highlightChange 0.5s ease;
+        }
+        @keyframes highlightChange {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 var(--primary); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 4px var(--primary); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 var(--primary); }
+        }
+
         #note {
             margin-bottom: 20px;
         }
@@ -301,7 +311,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // 🚀 เปลี่ยนมาเรียกใช้ฟังก์ชันจัดการ Cache ความเร็วสูง
         import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -314,8 +323,6 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        
-        // 🚀 [จุดอัปเกรดสำคัญ] เปิดระบบบันทึกความจำสำรองลงใน Browser ทำให้เปิดแอปครั้งถัดไป ข้อมูลจะมาทันทีโดยไม่ต้องรอเน็ต
         const db = initializeFirestore(app, {
             localCache: persistentLocalCache({
                 tabManager: persistentMultipleTabManager()
@@ -330,6 +337,8 @@
         const list = document.getElementById('list');
         const datalist = document.getElementById('note-suggestions');
         const monthFilter = document.getElementById('month-filter');
+        const typeSelect = document.getElementById('type');
+        const noteInput = document.getElementById('note');
         
         const submitBtn = document.getElementById('submit-btn');
         const cancelBtn = document.getElementById('cancel-btn');
@@ -337,6 +346,35 @@
 
         let transactions = [];
         let editId = null;
+
+        // ==========================================
+        // 🤖 ระบบ AUTO-DETECT จัดหมวดหมู่อัตโนมัติ
+        // ==========================================
+        const expenseKeywords = ["ค่า", "ซื้อ", "จ่าย", "ช้อป", "บิล", "หนี้", "โอนให้", "เติมเงิน"];
+        const incomeKeywords = ["รับ", "เงินเดือน", "โอนเข้า", "ขาย", "ได้เงิน", "ถูกหวย", "เงินทอน"];
+
+        noteInput.addEventListener('input', function() {
+            const text = this.value.trim();
+            let newType = typeSelect.value;
+
+            // เช็คว่าคำที่พิมพ์ตรงกับคีย์เวิร์ดฝั่งไหน
+            if (expenseKeywords.some(keyword => text.includes(keyword))) {
+                newType = "minus";
+            } else if (incomeKeywords.some(keyword => text.includes(keyword))) {
+                newType = "plus";
+            }
+
+            // ถ้ามีการเปลี่ยนประเภทอัตโนมัติ ให้ใส่เอฟเฟกต์เด้งเตือนเบาๆ
+            if (newType !== typeSelect.value) {
+                typeSelect.value = newType;
+                
+                // ลบคลาสออกแล้วใส่ใหม่เพื่อให้แอนิเมชันเล่นซ้ำ
+                typeSelect.classList.remove('auto-changed');
+                void typeSelect.offsetWidth; // บังคับให้เบราว์เซอร์รีเซ็ต
+                typeSelect.classList.add('auto-changed');
+            }
+        });
+        // ==========================================
 
         const defaultSuggestions = [
             "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
@@ -518,7 +556,6 @@
 
         const q = query(transactionsRef, orderBy("date", "desc"));
         
-        // 🚀 onSnapshot จะทำหน้าที่ดึงข้อมูลจาก Cache ในเครื่องมาวาดหน้าจอทันทีตั้งแต่ มิลลิวินาทีแรก!
         onSnapshot(q, (snapshot) => {
             transactions = [];
             snapshot.forEach((doc) => {
