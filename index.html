@@ -6,7 +6,7 @@
     <title>My Money 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* CSS: แต่งหน้าตาให้คิวท์ ลื่นไหล และ Responsive */
+        /* CSS: สไตล์ iOS 26 น่ารัก ลื่นไหล มินิมอล */
         :root {
             --bg-color: #f7f9fc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -14,6 +14,7 @@
             --income: #b5e48c;
             --expense: #ffb4a2;
             --text-dark: #4a4e69;
+            --delete-btn: #ffb4b4;
         }
 
         * {
@@ -60,7 +61,7 @@
         }
 
         .balance-amount {
-            font-size: 36px;
+            font-size: 34px;
             font-weight: 600;
             margin: 10px 0 0 0;
         }
@@ -83,7 +84,7 @@
             font-family: 'Prompt', sans-serif;
             font-size: 16px;
             outline: none;
-            transition: 0.3s ease;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         input:focus, select:focus {
@@ -107,21 +108,35 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         button:active {
             transform: scale(0.95);
         }
 
-        h3 {
-            font-size: 18px;
+        /* ส่วนหัวข้อประวัติและตัวเลือกเดือน */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
+        }
+
+        h3 { font-size: 18px; }
+
+        #month-filter {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .history-list {
             list-style: none;
-            max-height: 250px;
+            max-height: 280px;
             overflow-y: auto;
         }
 
@@ -131,6 +146,7 @@
             border-radius: 10px;
         }
 
+        /* สไตล์ไอเทมรายการประวัติ */
         .item {
             display: flex;
             justify-content: space-between;
@@ -140,37 +156,97 @@
             border-radius: 20px;
             margin-bottom: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 15px;
+            transition: all 0.3s ease;
         }
 
         .item.plus { border-left: 6px solid var(--income); }
         .item.minus { border-left: 6px solid var(--expense); }
 
+        /* แอนิเมชันตอนลบ */
+        .item.fade-out {
+            opacity: 0;
+            transform: scale(0.9) translateY(-10px);
+            margin-bottom: -50px;
+            padding-top: 0;
+            padding-bottom: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        .item-note {
+            word-break: break-word;
+            font-weight: 400;
+        }
+
+        .item-date {
+            font-size: 11px;
+            color: #a0a5ba;
+            margin-top: 2px;
+        }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .item-amount {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ปุ่มลบสไตล์ iOS จิ้มแล้วนุ่มๆ */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--delete-btn);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, color 0.2s ease;
+            width: auto;
+            margin-bottom: 0;
+        }
+        
+        .delete-btn:hover {
+            color: #ff5c5c;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.8);
+        }
+
+        .no-data {
+            text-align: center;
+            color: #a0a5ba;
+            padding: 20px;
+            font-size: 14px;
+        }
+
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @media screen and (max-width: 480px) {
-            .container {
-                padding: 25px 20px;
-                border-radius: 30px;
-            }
-            .balance-amount { font-size: 30px; }
-            .form-group {
-                flex-direction: column;
-                gap: 10px;
-            }
+            .container { padding: 25px 20px; border-radius: 30px; }
+            .balance-amount { font-size: 28px; }
+            .form-group { flex-direction: column; gap: 10px; }
             #type, #amount { width: 100%; }
-            input, select, button {
-                padding: 14px;
-                font-size: 15px;
-            }
-            .item {
-                padding: 14px;
-                font-size: 14px;
-            }
+            input, select, button { padding: 14px; font-size: 15px; }
+            .item { padding: 14px; font-size: 14px; }
         }
     </style>
 </head>
@@ -180,7 +256,7 @@
         <h1>My Money 💸</h1>
         
         <div class="balance-card">
-            <div>ยอดเงินคงเหลือ</div>
+            <div id="balance-title">ยอดเงินคงเหลือ (ทั้งหมด)</div>
             <div class="balance-amount" id="balance">฿0.00</div>
         </div>
 
@@ -194,14 +270,18 @@
             </div>
             
             <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร..." required autocomplete="off">
-            
-            <datalist id="note-suggestions">
-                </datalist>
+            <datalist id="note-suggestions"></datalist>
 
             <button type="submit">บันทึกข้อมูล ✨</button>
         </form>
 
-        <h3>ประวัติล่าสุด</h3>
+        <div class="history-header">
+            <h3>ประวัติรายการ</h3>
+            <select id="month-filter">
+                <option value="all">ทั้งหมด 📅</option>
+            </select>
+        </div>
+
         <ul class="history-list" id="list">
             </ul>
     </div>
@@ -209,29 +289,24 @@
     <script>
         const form = document.getElementById('transaction-form');
         const balanceDisplay = document.getElementById('balance');
+        const balanceTitle = document.getElementById('balance-title');
         const list = document.getElementById('list');
         const datalist = document.getElementById('note-suggestions');
+        const monthFilter = document.getElementById('month-filter');
 
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-        // ลิสต์คำฮิตเริ่มต้น (Gen Z Starter Pack)
         const defaultSuggestions = [
             "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
             "ช้อปปิ้ง 🛍️", "ค่าเน็ต/โทรศัพท์ 📱", "เงินเดือน 💰", 
             "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
         ];
 
-        // ฟังก์ชันอัปเดตระบบเดาคำ
+        // ฟังก์ชันอัปเดตคำเดาอัตโนมัติ
         function updateSuggestions() {
-            datalist.innerHTML = ''; // ล้างของเก่าก่อน
-            
-            // ดึงคำจากประวัติเก่าๆ มา (เฉพาะคำที่ไม่ซ้ำกัน)
+            datalist.innerHTML = '';
             const pastNotes = transactions.map(t => t.note);
-            
-            // รวมคำฮิต + คำจากประวัติ และตัดคำที่ซ้ำกันออก (ด้วย Set)
             const allSuggestions = [...new Set([...defaultSuggestions, ...pastNotes])];
-
-            // สร้าง <option> ใส่เข้าไปใน datalist
             allSuggestions.forEach(note => {
                 const option = document.createElement('option');
                 option.value = note;
@@ -239,31 +314,115 @@
             });
         }
 
+        // ฟังก์ชันอัปเดตตัวเลือกเดือนใน Dropdown (ดึงมาจากวันที่มีการคีย์จริง)
+        function updateMonthFilterOptions() {
+            const currentSelection = monthFilter.value;
+            monthFilter.innerHTML = '<option value="all">ทั้งหมด 📅</option>';
+            
+            // ดึงปี-เดือนที่ไม่ซ้ำกันออกมา
+            const months = transactions.map(t => {
+                const d = new Date(t.date);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            });
+            const uniqueMonths = [...new Set(months)].sort().reverse(); // เอาเดือนล่าสุดขึ้นก่อน
+
+            uniqueMonths.forEach(m => {
+                const [year, month] = m.split('-');
+                const dateObj = new Date(year, month - 1);
+                // แปลงเป็นชื่อเดือนภาษาไทยย่อ เช่น ม.ค. 2026
+                const monthName = dateObj.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
+                
+                const option = document.createElement('option');
+                option.value = m;
+                option.innerText = monthName;
+                monthFilter.appendChild(option);
+            });
+
+            // ตรวจสอบว่าค่าที่เคยเลือกยังอยู่ไหม ถ้ามีก็ให้เลือกค่าเดิม
+            if ([...monthFilter.options].some(o => o.value === currentSelection)) {
+                monthFilter.value = currentSelection;
+            } else {
+                monthFilter.value = 'all';
+            }
+        }
+
+        // ฟังก์ชันหลักในการแสดงผลหน้าจอ
         function updateUI() {
             list.innerHTML = '';
             let total = 0;
+            const selectedMonth = monthFilter.value; // ค่าเดือนที่เลือก 'all' หรือ 'YYYY-MM'
 
-            transactions.forEach(t => {
+            // กรองรายการตามเดือนที่เลือก
+            const filteredTransactions = transactions.filter(t => {
+                if (selectedMonth === 'all') return true;
+                const d = new Date(t.date);
+                const itemMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                return itemMonth === selectedMonth;
+            });
+
+            if (filteredTransactions.length === 0) {
+                list.innerHTML = '<div class="no-data">ไม่มีรายการของเดือนนี้ 🍩</div>';
+            }
+
+            // แสดงรายการประวัติ
+            filteredTransactions.forEach(t => {
                 if (t.type === 'plus') total += t.amount;
                 else total -= t.amount;
 
+                const d = new Date(t.date);
+                const formattedDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
+
                 const li = document.createElement('li');
                 li.classList.add('item', t.type);
+                li.setAttribute('data-id', t.id); // ใส่ ID ไว้ใช้ตอนลบ
                 li.innerHTML = `
-                    <span style="flex: 1; word-break: break-word; padding-right: 10px;">${t.note}</span>
-                    <span style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'}; font-weight: 600; white-space: nowrap;">
-                        ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                    </span>
+                    <div class="item-details">
+                        <span class="item-note">${t.note}</span>
+                        <span class="item-date">${formattedDate}</span>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-amount" style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'};">
+                            ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </span>
+                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">🗑️</button>
+                    </div>
                 `;
-                list.prepend(li);
+                list.appendChild(li); // แสดงจากใหม่ไปเก่าตามลำดับ Array ที่กลับไว้ หรือใช้วิธีดันเข้าบนสุด
             });
+
+            // ปรับเปลี่ยนคำอธิบายยอดเงินให้สอดคล้องกับตัวกรอง
+            if (selectedMonth === 'all') {
+                balanceTitle.innerText = "ยอดเงินคงเหลือ (ทั้งหมด)";
+            } else {
+                const [year, month] = selectedMonth.split('-');
+                const monthName = new Date(year, month - 1).toLocaleDateString('th-TH', { month: 'long' });
+                balanceTitle.innerText = `ยอดรวมเฉพาะเดือน (${monthName})`;
+            }
 
             balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
-            // เรียกใช้อัปเดตคำเดาด้วยทุกครั้งที่มีการอัปเดตหน้าจอ
             updateSuggestions();
         }
 
+        // ฟังก์ชันลบรายการแบบมีแอนิเมชันนุ่มๆ
+        window.deleteTransaction = function(id) {
+            const itemElement = document.querySelector(`[data-id="${id}"]`);
+            
+            if (itemElement) {
+                // ใส่แอนิเมชันสไตล์ iOS ก่อนลบจริง
+                itemElement.classList.add('fade-out');
+                
+                // รอให้แอนิเมชันเล่นจบ (0.3 วินาที) แล้วค่อยลบจากข้อมูลจริง
+                setTimeout(() => {
+                    transactions = transactions.filter(t => t.id !== id);
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    updateMonthFilterOptions();
+                    updateUI();
+                }, 300);
+            }
+        };
+
+        // เมื่อกด Submit ฟอร์มบันทึกข้อมูล
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -271,13 +430,20 @@
             const amount = parseFloat(document.getElementById('amount').value);
             const note = document.getElementById('note').value;
 
-            transactions.push({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
+            // บันทึกเวลาปัจจุบันลงไปด้วยเพื่อใช้แยกเดือน
+            transactions.unshift({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
             form.reset();
+            updateMonthFilterOptions();
             updateUI();
         });
 
+        // เมื่อมีการเปลี่ยนตัวกรองเดือนใน Dropdown
+        monthFilter.addEventListener('change', updateUI);
+
+        // รันครั้งแรกตอนโหลดหน้าเว็บ
+        updateMonthFilterOptions();
         updateUI();
     </script>
 </body>
