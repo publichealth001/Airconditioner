@@ -3,433 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet Bestie 💖 บันทึกรายรับรายจ่ายฉบับตัวมัม</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <title>My Money 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* CSS: แต่งหน้าตาให้คิวท์และลื่นไหล */
         :root {
-            --bg-gradient: linear-gradient(135deg, #FFE5EC 0%, #F0E6FF 100%);
-            --card-bg: rgba(255, 255, 255, 0.75);
-            --primary: #FF7096;
-            --income: #4BB543;
-            --expense: #FF4D4D;
-            --text-main: #2C2C2C;
-            --ios-shadow: 0 8px 32px 0 rgba(255, 112, 150, 0.15);
-            --spring-transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', 'Kanit', sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            --bg-color: #f7f9fc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --primary: #a8b2ff;
+            --income: #b5e48c;
+            --expense: #ffb4a2;
+            --text-dark: #4a4e69;
         }
 
         body {
-            background: var(--bg-gradient);
-            min-height: 100vh;
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            color: var(--text-main);
+            min-height: 100vh;
         }
 
-        /* Container หลักฟีล iOS Widget */
-        .app-container {
+        .container {
+            width: 100%;
+            max-width: 400px;
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 32px;
-            width: 100%;
-            max-width: 480px;
-            padding: 28px;
-            box-shadow: var(--ios-shadow);
-            animation: fadeIn 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 35px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        header {
+        h1 {
             text-align: center;
-            margin-bottom: 24px;
+            font-size: 24px;
+            margin-top: 0;
         }
 
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, #FF7096, #9B5DE5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        header p {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-
-        /* Bento Grid สรุปผลรายเดือน */
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .bento-item {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 20px;
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: var(--spring-transition);
-        }
-
-        .bento-item:hover {
-            transform: translateY(-4px);
-        }
-
-        .bento-item.full {
-            grid-column: span 2;
-            background: linear-gradient(135deg, #FF7096 0%, #9B5DE5 100%);
-            color: white;
+        .balance-card {
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border-radius: 25px;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
 
-        .bento-label {
-            font-size: 0.8rem;
+        .balance-amount {
+            font-size: 36px;
             font-weight: 600;
-            opacity: 0.8;
-            margin-bottom: 4px;
+            margin: 10px 0;
         }
 
-        .bento-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        /* ตัวเลือกตัวกรองเดือน */
-        .filter-section {
-            margin-bottom: 20px;
+        .form-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
-        select, input {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(0,0,0,0.05);
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: var(--spring-transition);
+        input, select {
             width: 100%;
-        }
-
-        select:focus, input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(255, 112, 150, 0.2);
-            background: white;
-        }
-
-        .month-select {
-            width: auto;
-            font-weight: 600;
-            color: #555;
-            cursor: pointer;
-        }
-
-        /* ฟอร์มกรอกข้อมูล */
-        .input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .form-container {
-            background: rgba(255, 255, 255, 0.4);
-            padding: 16px;
-            border-radius: 24px;
-            margin-bottom: 24px;
-        }
-
-        /* ปุ่มกดดึ๋งๆ สไตล์ iOS 26 */
-        .btn-add {
-            grid-column: span 2;
-            background: var(--text-main);
-            color: white;
+            padding: 15px;
             border: none;
-            padding: 14px;
-            border-radius: 16px;
+            border-radius: 18px;
+            background: #f0f2f5;
+            font-family: 'Prompt', sans-serif;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            background: #fff;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 18px;
+            background: var(--primary);
+            color: white;
+            font-family: 'Prompt', sans-serif;
+            font-size: 16px;
             font-weight: 600;
-            font-size: 1rem;
             cursor: pointer;
-            transition: var(--spring-transition);
-            margin-top: 8px;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            margin-bottom: 25px;
         }
 
-        .btn-add:active {
-            transform: scale(0.92);
-            background: #000;
+        button:active {
+            transform: scale(0.95); /* แอนิเมชันปุ่มบุ๋มลงไปแบบ iOS */
         }
 
-        /* รายการธุรกรรม */
-        .transaction-list {
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
             max-height: 250px;
             overflow-y: auto;
-            padding-right: 4px;
         }
 
-        /* ซ่อน Scrollbar แต่อยากให้เลื่อนได้แบบเนียนๆ */
-        .transaction-list::-webkit-scrollbar {
-            width: 4px;
+        .history-list::-webkit-scrollbar {
+            width: 5px;
         }
-        .transaction-list::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.1);
+        .history-list::-webkit-scrollbar-thumb {
+            background: #ccc;
             border-radius: 10px;
         }
 
-        .item-card {
-            background: white;
-            border-radius: 16px;
-            padding: 14px 16px;
+        .item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 20px;
             margin-bottom: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            transition: var(--spring-transition);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            animation: slideIn 0.3s ease;
         }
 
-        .item-card:hover {
-            transform: scale(1.02);
-        }
+        .item.plus { border-left: 5px solid var(--income); }
+        .item.minus { border-left: 5px solid var(--expense); }
 
-        .item-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .item-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .item-date {
-            font-size: 0.75rem;
-            opacity: 0.5;
-            margin-top: 2px;
-        }
-
-        .item-amount {
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .amount-income { color: var(--income); }
-        .amount-expense { color: var(--expense); }
-
-        .btn-delete {
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            cursor: pointer;
-            opacity: 0.3;
-            transition: var(--spring-transition);
-        }
-
-        .btn-delete:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-
-        /* อนิเมชั่นเก๋ๆ */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <header>
-        <h1>Wallet Bestie 💖</h1>
-        <p>บันทึกเงินฉบับตัวมัม ลื่นปรื๊ดไม่สะดุด</p>
-    </header>
-
-    <div class="bento-grid">
-        <div class="bento-item full">
-            <div class="bento-label">คงเหลือเดือนนี้ ✨</div>
-            <div class="bento-value" id="total-balance">฿0.00</div>
-        </div>
-        <div class="bento-item" style="color: var(--income);">
-            <div class="bento-label">รายรับรวม 🤑</div>
-            <div class="bento-value" id="total-income">฿0</div>
-        </div>
-        <div class="bento-item" style="color: var(--expense);">
-            <div class="bento-label">รายจ่ายรวม 💸</div>
-            <div class="bento-value" id="total-expense">฿0</div>
-        </div>
-    </div>
-
-    <div class="filter-section">
-        <h3 style="font-size: 1.1rem; font-weight: 600;">ไทม์ไลน์</h3>
-        <select id="month-filter" class="month-select" onchange="renderApp()">
-            </select>
-    </div>
-
-    <div class="form-container">
-        <div class="input-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-            <input type="text" id="tx-title" placeholder="ไปเอฟอะไรมาอัปเดตซิ... 🛍️" maxlength="30">
-        </div>
-        <div class="input-group">
-            <input type="number" id="tx-amount" placeholder="กี่บาทค้าบ? 💵" min="0">
-            <select id="tx-type">
-                <option value="expense">💸 รายจ่าย</option>
-                <option value="income">🤑 รายรับ</option>
-            </select>
-        </div>
-        <div class="input-group" style="grid-template-columns: 1fr;">
-            <input type="month" id="tx-date">
-        </div>
-        <button class="btn-add" onclick="addTransaction()">เพิ่มลงคลังเซฟโซน ✨</button>
-    </div>
-
-    <div class="transaction-list" id="tx-list">
-        </div>
-</div>
-
-<script>
-    // ดึงข้อมูลเก่าจาก LocalStorage (ถ้ามี) ถ้าไม่มีให้เป็นอาเรย์ว่าง
-    let transactions = JSON.parse(localStorage.getItem('wallet_bestie_txs')) || [];
-
-    // เซ็ตเดือนปัจจุบันให้ช่องอินพุตและตัวกรองอัตโนมัติ
-    const now = new Date();
-    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('tx-date').value = currentMonthStr;
-
-    // สร้างตัวเลือกเดือนใน Dropdown คัดแยกข้อมูลแบบฉลาดๆ
-    function initMonthFilter() {
-        const filter = document.getElementById('month-filter');
-        const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    <div class="container">
+        <h1>My Money 💸</h1>
         
-        let optionsHtml = '';
-        // แสดงย้อนหลัง 5 เดือน และล่วงหน้าไปเลยเพื่อความล้ำ
-        for (let i = -4; i <= 2; i++) {
-            const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-            const valStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            const selected = valStr === currentMonthStr ? 'selected' : '';
-            optionsHtml += `<option value="${valStr}" ${selected}>📅 ${months[d.getMonth()]} ${d.getFullYear() + 543}</option>`;
-        }
-        filter.innerHTML = optionsHtml;
-    }
+        <div class="balance-card">
+            <div>ยอดเงินคงเหลือ</div>
+            <div class="balance-amount" id="balance">฿0.00</div>
+        </div>
 
-    // ฟังก์ชั่นเพิ่มรายรับรายจ่าย
-    function addTransaction() {
-        const titleInput = document.getElementById('tx-title');
-        const amountInput = document.getElementById('tx-amount');
-        const typeInput = document.getElementById('tx-type');
-        const dateInput = document.getElementById('tx-date');
+        <form id="transaction-form">
+            <div class="form-group">
+                <select id="type">
+                    <option value="plus">รายรับ 📥</option>
+                    <option value="minus">รายจ่าย 📤</option>
+                </select>
+                <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1">
+            </div>
+            <input type="text" id="note" placeholder="จดไว้หน่อยว่าค่าอะไร..." required style="margin-bottom: 15px;">
+            <button type="submit">บันทึกข้อมูล ✨</button>
+        </form>
 
-        if (!titleInput.value.trim() || !amountInput.value || amountInput.value <= 0) {
-            alert('กรอกข้อมูลให้ครบและถูกต้องก่อนนะคิ้วท์ตี้! 🥺');
-            return;
+        <h3>ประวัติล่าสุด</h3>
+        <ul class="history-list" id="list">
+            </ul>
+    </div>
+
+    <script>
+        // JavaScript: สมองของเว็บ
+        const form = document.getElementById('transaction-form');
+        const balanceDisplay = document.getElementById('balance');
+        const list = document.getElementById('list');
+
+        // ดึงข้อมูลเก่าจาก Local Storage (ถ้ามี) หรือสร้าง Array ว่าง
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // ฟังก์ชันอัปเดตหน้าจอ
+        function updateUI() {
+            list.innerHTML = '';
+            let total = 0;
+
+            transactions.forEach(t => {
+                // คำนวณยอดรวม
+                if (t.type === 'plus') total += t.amount;
+                else total -= t.amount;
+
+                // สร้างกล่องประวัติ
+                const li = document.createElement('li');
+                li.classList.add('item', t.type);
+                li.innerHTML = `
+                    <span>${t.note}</span>
+                    <span style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'}; font-weight: 600;">
+                        ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString()}
+                    </span>
+                `;
+                list.prepend(li); // เอาของใหม่ไว้บนสุด
+            });
+
+            // อัปเดตยอดคงเหลือ
+            balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
-        const newTx = {
-            id: Date.now(),
-            title: titleInput.value.trim(),
-            amount: parseFloat(amountInput.value),
-            type: typeInput.value,
-            date: dateInput.value // รูปแบบ "YYYY-MM"
-        };
+        // เมื่อกดปุ่มบันทึก
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // ป้องกันเว็บรีเฟรช
 
-        transactions.unshift(newTx); // เอาไปใส่บนสุด
-        saveData();
-        renderApp();
+            const type = document.getElementById('type').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const note = document.getElementById('note').value;
 
-        // รีเซ็ตฟิลด์กรอกข้อมูลแบบสวยๆ
-        titleInput.value = '';
-        amountInput.value = '';
-    }
+            // เก็บข้อมูลลง Array
+            transactions.push({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
 
-    // ลบรายการ
-    function deleteTransaction(id) {
-        transactions = transactions.filter(tx => tx.id !== id);
-        saveData();
-        renderApp();
-    }
+            // สั่งให้เบราว์เซอร์จำข้อมูลไว้ (รีเฟรชแล้วไม่หาย)
+            localStorage.setItem('transactions', JSON.stringify(transactions));
 
-    // เซฟลงเครื่อง ไม่หายแน่นอนแม้กด Refresh
-    function saveData() {
-        localStorage.setItem('wallet_bestie_txs', JSON.stringify(transactions));
-    }
-
-    // คำนวณและแสดงผล UI ใหม่ทั้งหมดให้สอดคล้องกับเดือนที่เลือก
-    function renderApp() {
-        const selectedMonth = document.getElementById('month-filter').value;
-        const listContainer = document.getElementById('tx-list');
-        
-        // กรองเอาเฉพาะของเดือนที่เลือก
-        const filteredTxs = transactions.filter(tx => tx.date === selectedMonth);
-
-        let incomeSum = 0;
-        let expenseSum = 0;
-        let listHtml = '';
-
-        filteredTxs.forEach(tx => {
-            if (tx.type === 'income') {
-                incomeSum += tx.amount;
-            } else {
-                expenseSum += tx.amount;
-            }
-
-            const isIncome = tx.type === 'income';
-            listHtml += `
-                <div class="item-card">
-                    <div class="item-info">
-                        <span class="item-title">${tx.title}</span>
-                        <span class="item-date">ใส่ตู้เมื่อ: ${tx.date}</span>
-                    </div>
-                    <div class="item-amount ${isIncome ? 'amount-income' : 'amount-expense'}">
-                        ${isIncome ? '+' : '-'}฿${tx.amount.toLocaleString()}
-                        <button class="btn-delete" onclick="deleteTransaction(${tx.id})">🗑️</button>
-                    </div>
-                </div>
-            `;
+            // เคลียร์ช่องกรอกข้อมูล และอัปเดตหน้าจอ
+            form.reset();
+            updateUI();
         });
 
-        // แสดงผลลัพธ์ใน Bento Grid
-        const balance = incomeSum - expenseSum;
-        document.getElementById('total-balance').innerText = `฿${balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        document.getElementById('total-income').innerText = `฿${incomeSum.toLocaleString()}`;
-        document.getElementById('total-expense').innerText = `฿${expenseSum.toLocaleString()}`;
-
-        // จัดการกรณีไม่มีข้อมูล
-        if (filteredTxs.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; padding: 30px; opacity: 0.4; font-size:0.9rem;">เดือนนี้ยังว่างเปล่า ไปใช้เงินด่วน! 🦄</div>`;
-        } else {
-            listContainer.innerHTML = listHtml;
-        }
-    }
-
-    // เริ่มทำงานครั้งแรก
-    initMonthFilter();
-    renderApp();
-</script>
-
+        // โหลดข้อมูลตอนเปิดเว็บครั้งแรก
+        updateUI();
+    </script>
 </body>
 </html>
