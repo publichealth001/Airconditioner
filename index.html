@@ -97,7 +97,6 @@
             margin-bottom: 20px;
         }
 
-        /* ส่วนของกลุ่มปุ่มกดบันทึก/แก้ไข */
         .btn-group {
             display: flex;
             gap: 10px;
@@ -123,7 +122,7 @@
         #cancel-btn {
             background: #cbd5e1;
             color: #64748b;
-            display: none; /* ซ่อนไว้ก่อน จะโผล่มาตอนกดแก้ไข */
+            display: none;
         }
 
         .history-header {
@@ -192,7 +191,6 @@
         .item-right { display: flex; align-items: center; gap: 8px; }
         .item-amount { font-weight: 600; white-space: nowrap; margin-right: 4px; }
 
-        /* ปุ่มจัดการรายการประวัติ */
         .action-btn {
             background: none;
             border: none;
@@ -214,7 +212,6 @@
 
         .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
 
-        /* 🔔 สไตล์กล่องแจ้งเตือน Toast แจ้งเตือนสุดล้ำ */
         .toast-container {
             position: fixed;
             top: -100px;
@@ -237,11 +234,7 @@
             pointer-events: none;
         }
 
-        .toast-container.show {
-            top: 25px;
-            opacity: 1;
-        }
-
+        .toast-container.show { top: 25px; opacity: 1; }
         .toast-success { border-left: 5px solid var(--income); color: #52793d; }
         .toast-info { border-left: 5px solid var(--primary); color: #5b65b3; }
         .toast-delete { border-left: 5px solid var(--expense); color: #c26753; }
@@ -302,15 +295,15 @@
         </div>
 
         <ul class="history-list" id="list">
-            <div class="no-data">กำลังเชื่อมต่อคลาวด์... 🚀</div>
+            <div class="no-data">กำลังโหลดข้อมูล... 🚀</div>
         </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // 🚀 เปลี่ยนมาเรียกใช้ฟังก์ชันจัดการ Cache ความเร็วสูง
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // คอนฟิกูเรชันโปรเจกต์ของคุณ boonsomair-3f5b0
         const firebaseConfig = {
             apiKey: "AIzaSyAdnDcProI1UFW2a9eGiUJbLYmI7ihM1XQ",
             authDomain: "boonsomair-3f5b0.firebaseapp.com",
@@ -321,7 +314,14 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        
+        // 🚀 [จุดอัปเกรดสำคัญ] เปิดระบบบันทึกความจำสำรองลงใน Browser ทำให้เปิดแอปครั้งถัดไป ข้อมูลจะมาทันทีโดยไม่ต้องรอเน็ต
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
+        });
+        
         const transactionsRef = collection(db, "transactions");
 
         const form = document.getElementById('transaction-form');
@@ -336,7 +336,7 @@
         const toast = document.getElementById('toast');
 
         let transactions = [];
-        let editId = null; // ไว้เก็บ ID ไอเทมที่กำลังแก้ไขอยู่ (ถ้าเป็น null แปลว่าโหมดบันทึกปกติ)
+        let editId = null;
 
         const defaultSuggestions = [
             "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
@@ -344,13 +344,12 @@
             "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
         ];
 
-        // 🔔 ฟังก์ชันเรียกโชว์หน้าต่างแจ้งเตือนสุดคิวท์
         function showToast(text, type = 'success') {
             const toastText = document.getElementById('toast-text');
             const toastIcon = document.getElementById('toast-icon');
             
             toastText.innerText = text;
-            toast.className = "toast-container show"; // รีเซ็ตคลาสรีรันการโชว์
+            toast.className = "toast-container show";
             
             if (type === 'success') {
                 toast.classList.add('toast-success');
@@ -363,10 +362,9 @@
                 toastIcon.innerText = '🗑️';
             }
 
-            // แสดงผล 2.5 วินาทีแล้วค่อยๆ เก็บตัวกลับขึ้นไปด้านบน
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 250);
+            }, 2500);
         }
 
         function updateSuggestions() {
@@ -450,7 +448,6 @@
                 list.appendChild(li);
             });
 
-            // ผูกเหตุการณ์ให้ปุ่มลบ
             document.querySelectorAll('.delete-btn-icon').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-delete-id');
@@ -458,7 +455,6 @@
                 });
             });
 
-            // ผูกเหตุการณ์ให้ปุ่มแก้ไข
             document.querySelectorAll('.edit-btn-icon').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-edit-id');
@@ -478,25 +474,22 @@
             updateSuggestions();
         }
 
-        // เข้าสู่โหมดแก้ไขข้อมูล
         function startEdit(id) {
             const target = transactions.find(t => t.id === id);
             if (!target) return;
 
-            editId = id; // ล็อก ID ที่จะแก้ไข
+            editId = id;
             document.getElementById('type').value = target.type;
             document.getElementById('amount').value = target.amount;
             document.getElementById('note').value = target.note;
 
-            // แปลงร่างปุ่มกดยืนยันให้ชัดเจนขึ้น
             submitBtn.innerText = "อัปเดตข้อมูล 🛠️";
-            submitBtn.style.background = "#ffd166"; // เปลี่ยนเป็นสีส้ม/เหลือง
-            cancelBtn.style.display = "block"; // เปิดปุ่มยกเลิกตัวเลือกขึ้นมา
+            submitBtn.style.background = "#ffd166";
+            cancelBtn.style.display = "block";
             
-            document.getElementById('amount').focus(); // เลื่อนโฟกัสไปช่องกรอกเงินทันที
+            document.getElementById('amount').focus();
         }
 
-        // ยกเลิกโหมดแก้ไข ล้างค่าฟอร์มกลับเป็นปกติ
         function resetFormState() {
             editId = null;
             form.reset();
@@ -507,7 +500,6 @@
 
         cancelBtn.addEventListener('click', resetFormState);
 
-        // ฟังก์ชันลบรายการแบบมีแอนิเมชัน
         async function deleteTransaction(id) {
             const itemElement = document.querySelector(`[data-id="${id}"]`);
             if (itemElement) {
@@ -516,7 +508,7 @@
                     try {
                         await deleteDoc(doc(db, "transactions", id));
                         showToast("ลบรายการเรียบร้อยแล้ว", "delete");
-                        if (editId === id) resetFormState(); // หากกำลังแก้รายการนี้อยู่แล้วกดลบ ให้ล้างฟอร์มด้วย
+                        if (editId === id) resetFormState();
                     } catch (error) {
                         console.error("Error deleting document: ", error);
                     }
@@ -524,8 +516,9 @@
             }
         }
 
-        // ฟังการอัปเดตแบบเรียลไทม์จาก Firebase
         const q = query(transactionsRef, orderBy("date", "desc"));
+        
+        // 🚀 onSnapshot จะทำหน้าที่ดึงข้อมูลจาก Cache ในเครื่องมาวาดหน้าจอทันทีตั้งแต่ มิลลิวินาทีแรก!
         onSnapshot(q, (snapshot) => {
             transactions = [];
             snapshot.forEach((doc) => {
@@ -535,7 +528,6 @@
             updateUI();
         });
 
-        // เมื่อกดส่งฟอร์ม (ทั้งบันทึกใหม่ หรือ อัปเดตของเก่า)
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -545,18 +537,15 @@
 
             try {
                 if (editId) {
-                    // 🛠️ โหมดอัปเดตข้อมูลเดิมบน Firebase
                     const docRef = doc(db, "transactions", editId);
                     await updateDoc(docRef, {
                         type,
                         amount,
                         note
-                        // เก็บวันที่เดิมไว้ ไม่เปลี่ยนเพื่อคงตำแหน่งและเดือนเดิม
                     });
                     showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
                     resetFormState();
                 } else {
-                    // ✨ โหมดบันทึกรายการใหม่แกะกล่อง
                     await addDoc(transactionsRef, {
                         type,
                         amount,
