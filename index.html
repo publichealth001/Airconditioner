@@ -14,6 +14,7 @@
             --primary: #a8b2ff;
             --income: #b5e48c;
             --expense: #ffb4a2;
+            --transfer-move: #9fd3c7;
             --text-dark: #4a4e69;
             --delete-btn: #ffb4b4;
             --edit-btn: #ffd166;
@@ -100,28 +101,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        #bank-start-balance {
-            width: 110px;
-            padding: 4px 8px;
-            background: #f0f2f5;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: 'Prompt', sans-serif;
-            border: none;
-            color: var(--text-dark);
-            outline: none;
-            text-align: right;
-            border-radius: 8px;
-            transition: var(--transition-snappy);
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        #bank-start-balance:focus {
-            background: #fff;
-            box-shadow: 0 0 0 2px var(--primary);
         }
 
         /* ⚠️ BUDGET CARD STYLES */
@@ -382,6 +361,7 @@
 
         .item.plus { border-left: 6px solid var(--income); }
         .item.minus { border-left: 6px solid var(--expense); }
+        .item.move { border-left: 6px solid var(--transfer-move); }
 
         .item.fade-out {
             opacity: 0;
@@ -511,13 +491,6 @@
                     <span style="color: #7a7f9a;">เงินในบัญชีธนาคาร 🏦:</span>
                     <span id="bank-current-balance" style="font-weight: 600; color: #4e73df;">฿0.00</span>
                 </div>
-                <div class="breakdown-row" style="margin-top: 4px; border-top: 1px dashed #f0f2f5; padding-top: 6px;">
-                    <span style="color: #a0a5ba; font-size: 11px;">ระบุเงินธนาคารตั้งต้น 📌:</span>
-                    <div style="display: flex; align-items: center; gap: 2px;">
-                        <span style="color: #a0a5ba; font-size: 11px;">฿</span>
-                        <input type="number" id="bank-start-balance" min="0" value="0" placeholder="ระบุทุนเดิม">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -550,6 +523,7 @@
                 <select id="type">
                     <option value="minus">รายจ่าย 📤</option>
                     <option value="plus">รายรับ 📥</option>
+                    <option value="move">ย้ายเงิน 🔄</option>
                 </select>
                 <select id="method">
                     <option value="transfer">เงินโอน 📱</option>
@@ -560,7 +534,7 @@
                 <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1" step="any">
             </div>
             
-            <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร..." required autocomplete="off">
+            <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร... (ลองพิมพ์ 'ฝากเงิน' ดูสิ)" required autocomplete="off">
             <datalist id="note-suggestions"></datalist>
 
             <div class="btn-group">
@@ -620,9 +594,7 @@
         const cancelBtn = document.getElementById('cancel-btn');
         const toast = document.getElementById('toast');
 
-        // Budget & Bank DOM Elements
         const budgetInput = document.getElementById('budget-limit');
-        const bankStartInput = document.getElementById('bank-start-balance');
         const budgetProgress = document.getElementById('budget-progress');
         const budgetUsedLabel = document.getElementById('budget-used');
         const budgetPercentLabel = document.getElementById('budget-percent');
@@ -632,9 +604,7 @@
         let editId = null;
         let expenseChart = null;
 
-        // ดึงข้อมูลค่าตั้งต้นจากตัวเครื่อง
         budgetInput.value = localStorage.getItem('monthly_budget') || 5000;
-        bankStartInput.value = localStorage.getItem('bank_start_balance') || 0;
 
         budgetInput.addEventListener('input', function() {
             let val = parseFloat(this.value);
@@ -643,18 +613,12 @@
             updateUI();
         });
 
-        bankStartInput.addEventListener('input', function() {
-            let val = parseFloat(this.value);
-            if (isNaN(val) || val < 0) val = 0;
-            localStorage.setItem('bank_start_balance', val);
-            updateUI();
-        });
-
         // ==========================================
-        // 🧠 ระบบ SMART AUTO-FILL
+        // 🧠 ระบบ SMART AUTO-FILL (ขยายสัญชาตญาณตรวจจับการย้ายเงิน)
         // ==========================================
         const expenseKeywords = ["ค่า", "ซื้อ", "จ่าย", "ช้อป", "บิล", "หนี้", "โอนให้", "เติมเงิน"];
         const incomeKeywords = ["รับ", "เงินเดือน", "โอนเข้า", "ขาย", "ได้เงิน", "ถูกหวย", "เงินทอน"];
+        const transferKeywords = ["ฝากเงิน", "เอาเงินเข้าธนาคาร", "ถอนเงิน", "กดเงิน", "ย้ายเงิน", "โอนเข้าบัญชีตัวเอง"];
 
         noteInput.addEventListener('input', function() {
             const text = this.value.trim();
@@ -671,7 +635,15 @@
                 if (pastTx.method) methodSelect.value = pastTx.method; 
                 foundPastMatch = true;
             } else {
-                if (expenseKeywords.some(keyword => text.includes(keyword))) {
+                if (transferKeywords.some(keyword => text.includes(keyword))) {
+                    newType = "move";
+                    // ปรับหน้า UI ตัวเลือกวิธีการให้สอดคล้อง
+                    if(text.includes("ฝาก") || text.includes("เข้าธนาคาร")) {
+                        methodSelect.value = "transfer"; // วิ่งเข้าธนาคาร
+                    } else if(text.includes("ถอน") || text.includes("กดเงิน")) {
+                        methodSelect.value = "cash"; // วิ่งเข้ากระเป๋าเงินสด
+                    }
+                } else if (expenseKeywords.some(keyword => text.includes(keyword))) {
                     newType = "minus";
                 } else if (incomeKeywords.some(keyword => text.includes(keyword))) {
                     newType = "plus";
@@ -693,39 +665,24 @@
         });
 
         const defaultSuggestions = [
-            "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
-            "ช้อปปิ้ง 🛍️", "ค่าเน็ต/โทรศัพท์ 📱", "เงินเดือน 💰", 
-            "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
+            "ฝากเงินสดเข้าธนาคาร 🏦", "ถอนเงินสดออกจากตู้ 💵", "ชาไข่มุก 🧋", 
+            "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", "ช้อปปิ้ง 🛍️", "เงินเดือน 💰", "กาแฟ ☕"
         ];
 
         function showToast(text, type = 'success') {
             const toastText = document.getElementById('toast-text');
             const toastIcon = document.getElementById('toast-icon');
-            
             toastText.innerText = text;
-            
             toast.className = "toast-container";
             void toast.offsetWidth; 
-            
             toast.className = "toast-container show";
             
-            if (type === 'success') {
-                toast.classList.add('toast-success');
-                toastIcon.innerText = '🎉';
-            } else if (type === 'info') {
-                toast.classList.add('toast-info');
-                toastIcon.innerText = '🛠️';
-            } else if (type === 'delete') {
-                toast.classList.add('toast-delete');
-                toastIcon.innerText = '🗑️';
-            } else if (type === 'warning') {
-                toast.classList.add('toast-warning');
-                toastIcon.innerText = '⚠️';
-            }
+            if (type === 'success') { toast.classList.add('toast-success'); toastIcon.innerText = '🎉'; } 
+            else if (type === 'info') { toast.classList.add('toast-info'); toastIcon.innerText = '🛠️'; } 
+            else if (type === 'delete') { toast.classList.add('toast-delete'); toastIcon.innerText = '🗑️'; } 
+            else if (type === 'warning') { toast.classList.add('toast-warning'); toastIcon.innerText = '⚠️'; }
 
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2500);
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
         }
 
         function updateSuggestions() {
@@ -742,169 +699,126 @@
         function updateMonthFilterOptions() {
             const currentSelection = monthFilter.value;
             monthFilter.innerHTML = '<option value="all">ทั้งหมด 📅</option>';
-            
             const months = transactions.map(t => {
                 const d = new Date(t.date);
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             });
             const uniqueMonths = [...new Set(months)].sort().reverse();
-
             uniqueMonths.forEach(m => {
                 const [year, month] = m.split('-');
                 const dateObj = new Date(year, month - 1);
                 const monthName = dateObj.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
-                
                 const option = document.createElement('option');
                 option.value = m;
                 option.innerText = monthName;
                 monthFilter.appendChild(option);
             });
-
-            if ([...monthFilter.options].some(o => o.value === currentSelection)) {
-                monthFilter.value = currentSelection;
-            } else {
-                monthFilter.value = 'all';
-            }
+            if ([...monthFilter.options].some(o => o.value === currentSelection)) monthFilter.value = currentSelection;
+            else monthFilter.value = 'all';
         }
 
         function renderExpenseChart(expenseList) {
-            if (expenseList.length === 0) {
-                chartSection.style.display = 'none';
-                return;
-            }
+            if (expenseList.length === 0) { chartSection.style.display = 'none'; return; }
             chartSection.style.display = 'block';
 
             const groupedData = {};
-            expenseList.forEach(item => {
-                groupedData[item.note] = (groupedData[item.note] || 0) + item.amount;
-            });
+            expenseList.forEach(item => { groupedData[item.note] = (groupedData[item.note] || 0) + item.amount; });
+            const sortedItems = Object.keys(groupedData).map(key => ({ note: key, amount: groupedData[key] })).sort((a, b) => b.amount - a.amount);
 
-            const sortedItems = Object.keys(groupedData).map(key => ({
-                note: key,
-                amount: groupedData[key]
-            })).sort((a, b) => b.amount - a.amount);
-
-            let finalLabels = [];
-            let finalData = [];
-
+            let finalLabels = []; let finalData = [];
             if (sortedItems.length > 4) {
-                for (let i = 0; i < 4; i++) {
-                    finalLabels.push(sortedItems[i].note);
-                    finalData.push(sortedItems[i].amount);
-                }
-                let otherSum = 0;
-                for (let i = 4; i < sortedItems.length; i++) {
-                    otherSum += sortedItems[i].amount;
-                }
-                finalLabels.push('อื่นๆ 🧸');
-                finalData.push(otherSum);
+                for (let i = 0; i < 4; i++) { finalLabels.push(sortedItems[i].note); finalData.push(sortedItems[i].amount); }
+                let otherSum = 0; for (let i = 4; i < sortedItems.length; i++) { otherSum += sortedItems[i].amount; }
+                finalLabels.push('อื่นๆ 🧸'); finalData.push(otherSum);
             } else {
-                sortedItems.forEach(item => {
-                    finalLabels.push(item.note);
-                    finalData.push(item.amount);
-                });
+                sortedItems.forEach(item => { finalLabels.push(item.note); finalData.push(item.amount); });
             }
 
             const ctx = document.getElementById('expenseChart').getContext('2d');
-            
             if (expenseChart) {
-                expenseChart.data.labels = finalLabels;
-                expenseChart.data.datasets[0].data = finalData;
-                expenseChart.update(); 
+                expenseChart.data.labels = finalLabels; expenseChart.data.datasets[0].data = finalData; expenseChart.update(); 
             } else {
                 expenseChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: finalLabels,
-                        datasets: [{
-                            data: finalData,
-                            backgroundColor: ['#ffb4a2', '#ffcdb2', '#b5e48c', '#e2cfea', '#f7d1cd', '#a8b2ff'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
+                        datasets: [{ data: finalData, backgroundColor: ['#ffb4a2', '#ffcdb2', '#b5e48c', '#e2cfea', '#f7d1cd', '#a8b2ff'], borderWidth: 2, borderColor: '#ffffff' }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 800,
-                            easing: 'easeOutQuart'
-                        },
-                        layout: { padding: 5 },
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                align: 'center',
-                                labels: {
-                                    font: { family: 'Prompt', size: 12 },
-                                    boxWidth: 12,
-                                    padding: 12
-                                }
-                            }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 800, easing: 'easeOutQuart' }, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 12 }, boxWidth: 12 } } } }
                 });
             }
         }
 
         function updateUI() {
             list.innerHTML = '';
-            
-            let absoluteCashBalance = 0;   // เงินสดสะสมรวมทั้งหมดจากทุกเวลากาล
-            let absoluteBankOffset = 0;    // ยอดเคลื่อนไหวเงินโอนสะสมรวมทั้งหมด
-            let currentMonthExpenses = 0;  // รายจ่ายเฉพาะเดือนที่เลือกกรอง
+            let absoluteCashBalance = 0;   
+            let absoluteBankBalance = 0;   
+            let currentMonthExpenses = 0;  
             const selectedMonth = monthFilter.value;
 
-            // 1. คำนวณเงินไหลเวียนทั้งหมดแบบ Absolute (ยึดหลักตามเงื่อนไข เงินโอน/เงินสด)
+            // 1. คำนวณยอดเงินสะสมแบบครอบคลุมฟังก์ชัน "ย้ายเงิน"
             transactions.forEach(t => {
-                const isCash = (t.method === 'cash');
                 if (t.type === 'plus') {
-                    if (isCash) absoluteCashBalance += t.amount;
-                    else absoluteBankOffset += t.amount;
-                } else {
-                    if (isCash) absoluteCashBalance -= t.amount;
-                    else absoluteBankOffset -= t.amount;
+                    if (t.method === 'cash') absoluteCashBalance += t.amount;
+                    else absoluteBankBalance += t.amount;
+                } else if (t.type === 'minus') {
+                    if (t.method === 'cash') absoluteCashBalance -= t.amount;
+                    else absoluteBankBalance -= t.amount;
+                } else if (t.type === 'move') {
+                    // ย้ายเงิน: ถ้าปลายทางคือโอน (ฝากเงิน) = หักเงินสด เพิ่มธนาคาร
+                    if (t.method === 'transfer') {
+                        absoluteCashBalance -= t.amount;
+                        absoluteBankBalance += t.amount;
+                    } else { // ปลายทางคือเงินสด (ถอนเงิน) = หักธนาคาร เพิ่มเงินสด
+                        absoluteBankBalance -= t.amount;
+                        absoluteCashBalance += t.amount;
+                    }
                 }
             });
 
-            // 2. กรองเฉพาะรายการของเดือนที่เลือกเพื่อไปโชว์ในประวัติและกราฟ
             const filteredTransactions = transactions.filter(t => {
                 if (selectedMonth === 'all') return true;
                 const d = new Date(t.date);
-                const itemMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                return itemMonth === selectedMonth;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth;
             });
 
+            // คัดกรองรายจ่ายแท้จริงไปลงกราฟวงกลม (ไม่นำเรื่องย้ายเงินไปคิดให้เป้าหมายเพี้ยน)
             const currentExpensesList = filteredTransactions.filter(t => t.type === 'minus');
 
             if (filteredTransactions.length === 0) {
                 list.innerHTML = '<div class="no-data">ไม่มีรายการของเดือนนี้ 🍩</div>';
             }
 
-            // 3. เรนเดอร์รายการประวัติลงหน้าจอ
             filteredTransactions.forEach(t => {
-                if (t.type === 'minus') {
-                    currentMonthExpenses += t.amount;
-                }
+                if (t.type === 'minus') currentMonthExpenses += t.amount;
 
                 const d = new Date(t.date);
                 const formattedDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
-                const methodText = t.method === 'cash' ? '💵 เงินสด' : '📱 เงินโอน';
+                
+                let methodText = t.method === 'cash' ? '💵 เงินสด' : '📱 เงินโอน';
+                let typeClass = t.type;
+                let signText = t.type === 'plus' ? '+' : '-';
+                let amountColor = t.type === 'plus' ? '#7cb55e' : '#e07a64';
+
+                // ปรับแต่งข้อความแสดงในลิสต์ประวัติหากเป็นรายการย้ายเงิน
+                if (t.type === 'move') {
+                    typeClass = 'move';
+                    signText = '🔄 ';
+                    amountColor = '#52b788';
+                    methodText = t.method === 'transfer' ? '💵 ➔ 📱 ฝากเงิน' : '📱 ➔ 💵 ถอนเงิน';
+                }
 
                 const li = document.createElement('li');
-                li.classList.add('item', t.type);
+                li.classList.add('item', typeClass);
                 li.setAttribute('data-id', t.id); 
                 li.innerHTML = `
                     <div class="item-details">
-                        <span class="item-note">
-                            ${t.note} 
-                            <span class="method-tag">${methodText}</span>
-                        </span>
+                        <span class="item-note">${t.note} <span class="method-tag">${methodText}</span></span>
                         <span class="item-date">${formattedDate}</span>
                     </div>
                     <div class="item-right">
-                        <span class="item-amount" style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'};">
-                            ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        <span class="item-amount" style="color: ${amountColor};">
+                            ${signText}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                         </span>
                         <button class="action-btn edit-btn-icon" data-edit-id="${t.id}">✏️</button>
                         <button class="action-btn delete-btn-icon" data-delete-id="${t.id}">🗑️</button>
@@ -913,17 +827,11 @@
                 list.appendChild(li);
             });
 
-            // 4. คำนวณสรุปยอดเงินคงเหลือ REAL-TIME 
-            const bankStartValue = parseFloat(bankStartInput.value) || 0;
-            const finalBankBalance = bankStartValue + absoluteBankOffset; // ทุนเริ่มต้นธนาคาร + ยอดไหลเวียนเงินโอน
-            const grandTotal = absoluteCashBalance + finalBankBalance;    // เงินสดสะสมรวม + เงินธนาคารปัจจุบัน
-
-            // แสดงผลยอดคำนวณการเงิน
+            const grandTotal = absoluteCashBalance + absoluteBankBalance;    
             grandTotalDisplay.innerText = `฿${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             cashBalanceDisplay.innerText = `฿${absoluteCashBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            bankCurrentBalanceDisplay.innerText = `฿${finalBankBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            bankCurrentBalanceDisplay.innerText = `฿${absoluteBankBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-            // 5. จัดการแถบงบประมาณ (Budget Bar)
             const budgetLimit = parseFloat(budgetInput.value) || 0;
             budgetUsedLabel.innerText = `ใช้ไป: ฿${currentMonthExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
@@ -931,61 +839,43 @@
                 let percent = Math.min((currentMonthExpenses / budgetLimit) * 100, 100);
                 budgetPercentLabel.innerText = `${Math.round((currentMonthExpenses / budgetLimit) * 100)}%`;
                 budgetProgress.style.width = `${percent}%`;
-
                 if (percent >= 100) budgetProgress.style.backgroundColor = '#ffb4b4'; 
                 else if (percent >= 80) budgetProgress.style.backgroundColor = '#ffd166'; 
                 else budgetProgress.style.backgroundColor = '#b5e48c'; 
             } else {
-                budgetPercentLabel.innerText = '0%';
-                budgetProgress.style.width = '0%';
-                budgetProgress.style.backgroundColor = '#b5e48c';
+                budgetPercentLabel.innerText = '0%'; budgetProgress.style.width = '0%'; budgetProgress.style.backgroundColor = '#b5e48c';
             }
             
             renderExpenseChart(currentExpensesList);
 
-            // ผูก Event ปุ่มกดต่าง ๆ ในลิสต์ประวัติ
             document.querySelectorAll('.delete-btn-icon').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.getAttribute('data-delete-id');
-                    deleteTransaction(id);
-                });
+                btn.addEventListener('click', function() { deleteTransaction(this.getAttribute('data-delete-id')); });
             });
-
             document.querySelectorAll('.edit-btn-icon').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.getAttribute('data-edit-id');
-                    startEdit(id);
-                });
+                btn.addEventListener('click', function() { startEdit(this.getAttribute('data-edit-id')); });
             });
-
             updateSuggestions();
         }
 
         function startEdit(id) {
             const target = transactions.find(t => t.id === id);
             if (!target) return;
-
             editId = id;
             typeSelect.value = target.type;
             methodSelect.value = target.method || 'transfer'; 
             amountInput.value = target.amount;
             noteInput.value = target.note;
-
             submitBtn.innerText = "อัปเดตข้อมูล 🛠️";
             submitBtn.style.background = "#ffd166";
             cancelBtn.style.display = "block";
-            
             amountInput.focus();
         }
 
         function resetFormState() {
-            editId = null;
-            form.reset();
-            submitBtn.innerText = "บันทึกข้อมูล ✨";
-            submitBtn.style.background = "var(--primary)";
+            editId = null; form.reset();
+            submitBtn.innerText = "บันทึกข้อมูล ✨"; submitBtn.style.background = "var(--primary)";
             cancelBtn.style.display = "none";
         }
-
         cancelBtn.addEventListener('click', resetFormState);
 
         function deleteTransaction(id) {
@@ -994,76 +884,43 @@
                 itemElement.classList.add('fade-out');
                 showToast("ลบรายการเรียบร้อยแล้ว", "delete");
                 if (editId === id) resetFormState();
-
                 setTimeout(() => {
-                    deleteDoc(doc(db, "transactions", id)).catch(error => {
-                        console.error("ลบไม่ได้: ", error);
-                        showToast("เกิดข้อผิดพลาด กรุณาลองใหม่", "warning");
-                    });
+                    deleteDoc(doc(db, "transactions", id)).catch(err => { showToast("เกิดข้อผิดพลาดในการลบ", "warning"); });
                 }, 300);
             }
         }
 
         const q = query(transactionsRef, orderBy("date", "desc"));
-        
         onSnapshot(q, (snapshot) => {
             transactions = [];
-            snapshot.forEach((doc) => {
-                transactions.push({ id: doc.id, ...doc.data() });
-            });
-            updateMonthFilterOptions();
-            updateUI();
+            snapshot.forEach((doc) => { transactions.push({ id: doc.id, ...doc.data() }); });
+            updateMonthFilterOptions(); updateUI();
         });
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
             const type = typeSelect.value;
             const method = methodSelect.value;
             const amount = parseFloat(amountInput.value);
             const note = noteInput.value.trim();
 
             if (editId) {
-                const targetId = editId;
-                resetFormState();
+                const targetId = editId; resetFormState();
                 showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
-                
-                updateDoc(doc(db, "transactions", targetId), {
-                    type, method, amount, note
-                }).catch(err => {
-                    console.error("อัปเดตไม่ได้: ", err);
-                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "warning");
-                });
-
+                updateDoc(doc(db, "transactions", targetId), { type, method, amount, note });
             } else {
-                const budgetLimit = parseFloat(budgetInput.value) || 0;
-                if (type === 'minus' && budgetLimit > 0) {
+                if (type === 'minus' && (parseFloat(budgetInput.value) || 0) > 0) {
                     const currentMonthStr = new Date().toISOString().substring(0, 7); 
                     const thisMonthExpenses = transactions
                         .filter(t => t.type === 'minus' && t.date.startsWith(currentMonthStr))
                         .reduce((sum, t) => sum + t.amount, 0) + amount;
-
-                    if (thisMonthExpenses > budgetLimit) {
-                        showToast(`เตือนสติ! เดือนนี้คุณใช้เงินเกินงบไปแล้วนะตัวเธอ 🚨`, "warning");
-                    } else {
-                        showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
-                    }
+                    if (thisMonthExpenses > parseFloat(budgetInput.value)) showToast(`เตือนสติ! เงินเกินงบแล้วนะตัวเธอ 🚨`, "warning");
+                    else showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
                 } else {
                     showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
                 }
-                
                 form.reset();
-                
-                addDoc(transactionsRef, {
-                    type,
-                    method,
-                    amount,
-                    note,
-                    date: new Date().toISOString()
-                }).catch(err => {
-                    console.error("บันทึกไม่ได้: ", err);
-                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "warning");
-                });
+                addDoc(transactionsRef, { type, method, amount, note, date: new Date().toISOString() });
             }
         });
 
