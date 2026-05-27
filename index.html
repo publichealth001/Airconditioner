@@ -16,7 +16,6 @@
             --text-dark: #4a4e69;
         }
 
-        /* รีเซ็ตค่าขอบทุกอย่างให้คำนวณง่ายขึ้น */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -27,7 +26,7 @@
             font-family: 'Prompt', sans-serif;
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
             color: var(--text-dark);
-            padding: 15px; /* ลด padding ลงนิดหน่อยเผื่อจอมือถือ */
+            padding: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -36,7 +35,7 @@
 
         .container {
             width: 100%;
-            max-width: 420px; /* ขยาย max-width ให้ดูสบายตาบนจอใหญ่ */
+            max-width: 420px;
             background: var(--card-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -72,14 +71,8 @@
             margin-bottom: 15px;
         }
 
-        /* ให้ select และ input แบ่งสัดส่วนกันสวยงาม */
-        #type {
-            flex: 1; /* กินพื้นที่ 1 ส่วน */
-        }
-
-        #amount {
-            flex: 1.5; /* กินพื้นที่ 1.5 ส่วน (ยาวกว่า select นิดหน่อย) */
-        }
+        #type { flex: 1; }
+        #amount { flex: 1.5; }
 
         input, select {
             width: 100%;
@@ -132,9 +125,7 @@
             overflow-y: auto;
         }
 
-        .history-list::-webkit-scrollbar {
-            width: 5px;
-        }
+        .history-list::-webkit-scrollbar { width: 5px; }
         .history-list::-webkit-scrollbar-thumb {
             background: #ccc;
             border-radius: 10px;
@@ -161,35 +152,24 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 📱 โหมดสำหรับมือถือ (หน้าจอแคบกว่า 480px) */
         @media screen and (max-width: 480px) {
             .container {
-                padding: 25px 20px; /* ลดขอบด้านข้างลงให้มีพื้นที่พิมพ์มากขึ้น */
+                padding: 25px 20px;
                 border-radius: 30px;
             }
-
-            .balance-amount {
-                font-size: 30px; /* ลดขนาดตัวเลขยอดเงินลงนิดหน่อยไม่ให้ล้น */
-            }
-
+            .balance-amount { font-size: 30px; }
             .form-group {
-                flex-direction: column; /* จับรายรับ-รายจ่าย และ จำนวนเงิน เรียงซ้อนกันบนจอแคบมากๆ */
+                flex-direction: column;
                 gap: 10px;
             }
-
-            #type, #amount {
-                flex: none;
-                width: 100%;
-            }
-
+            #type, #amount { width: 100%; }
             input, select, button {
                 padding: 14px;
                 font-size: 15px;
             }
-
             .item {
                 padding: 14px;
-                font-size: 14px; /* ลดฟอนต์ประวัติลงให้แสดงบนจอเล็กได้ครบ */
+                font-size: 14px;
             }
         }
     </style>
@@ -207,12 +187,17 @@
         <form id="transaction-form">
             <div class="form-group">
                 <select id="type">
-                    <option value="plus">รายรับ 📥</option>
                     <option value="minus">รายจ่าย 📤</option>
+                    <option value="plus">รายรับ 📥</option>
                 </select>
                 <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1" step="any">
             </div>
-            <input type="text" id="note" placeholder="จดไว้หน่อยว่าค่าอะไร..." required>
+            
+            <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร..." required autocomplete="off">
+            
+            <datalist id="note-suggestions">
+                </datalist>
+
             <button type="submit">บันทึกข้อมูล ✨</button>
         </form>
 
@@ -225,8 +210,34 @@
         const form = document.getElementById('transaction-form');
         const balanceDisplay = document.getElementById('balance');
         const list = document.getElementById('list');
+        const datalist = document.getElementById('note-suggestions');
 
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // ลิสต์คำฮิตเริ่มต้น (Gen Z Starter Pack)
+        const defaultSuggestions = [
+            "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
+            "ช้อปปิ้ง 🛍️", "ค่าเน็ต/โทรศัพท์ 📱", "เงินเดือน 💰", 
+            "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
+        ];
+
+        // ฟังก์ชันอัปเดตระบบเดาคำ
+        function updateSuggestions() {
+            datalist.innerHTML = ''; // ล้างของเก่าก่อน
+            
+            // ดึงคำจากประวัติเก่าๆ มา (เฉพาะคำที่ไม่ซ้ำกัน)
+            const pastNotes = transactions.map(t => t.note);
+            
+            // รวมคำฮิต + คำจากประวัติ และตัดคำที่ซ้ำกันออก (ด้วย Set)
+            const allSuggestions = [...new Set([...defaultSuggestions, ...pastNotes])];
+
+            // สร้าง <option> ใส่เข้าไปใน datalist
+            allSuggestions.forEach(note => {
+                const option = document.createElement('option');
+                option.value = note;
+                datalist.appendChild(option);
+            });
+        }
 
         function updateUI() {
             list.innerHTML = '';
@@ -248,6 +259,9 @@
             });
 
             balanceDisplay.innerText = `฿${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            // เรียกใช้อัปเดตคำเดาด้วยทุกครั้งที่มีการอัปเดตหน้าจอ
+            updateSuggestions();
         }
 
         form.addEventListener('submit', function(e) {
@@ -258,7 +272,6 @@
             const note = document.getElementById('note').value;
 
             transactions.push({ id: Date.now(), type, amount, note, date: new Date().toISOString() });
-
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
             form.reset();
