@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS: ดีไซน์พาสเทลมินิมอล ลื่นไหล สไตล์ iOS */
+        /* CSS: ดีไซน์พาสเทลมินิมอล ลื่นไหล เสถียรทุกเบราว์เซอร์ */
         :root {
             --bg-color: #f7f9fc;
-            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.9); /* เพิ่มความทึบเล็กน้อยเผื่อเบราว์เซอร์ไม่รองรับ blur */
             --primary: #a8b2ff;
             --income: #b5e48c;
             --expense: #ffb4a2;
@@ -24,11 +24,15 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            /* ป้องกันการไฮไลท์สีฟ้าเวลาเผลอกดเบิ้ลบนมือถือ */
+            -webkit-tap-highlight-color: transparent; 
         }
 
         body {
             font-family: 'Prompt', sans-serif;
+            background: #8ec5fc; /* สีสำรองกรณี Gradient ไม่โหลด */
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            background-attachment: fixed; /* ล็อกพื้นหลังให้เสถียรบนโมบายล์ */
             color: var(--text-dark);
             padding: 15px;
             display: flex;
@@ -42,7 +46,7 @@
             max-width: 420px;
             background: var(--card-bg);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px); /* รองรับ Safari และ iOS */
             border-radius: 35px;
             padding: 35px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
@@ -57,6 +61,7 @@
         }
 
         .balance-card {
+            background: #ffffff;
             background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
             border-radius: 25px;
             padding: 20px;
@@ -114,6 +119,8 @@
             color: var(--text-dark);
             outline: none;
             text-align: right;
+            -webkit-appearance: none; /* ล้างสไตล์เริ่มต้นของ iOS */
+            border-radius: 0;
         }
 
         .progress-container {
@@ -140,7 +147,7 @@
             color: #7a7f9a;
         }
 
-        /* 📊 CHART CONTAINER STYLES (ปรับจัดกึ่งกลางและขยายขนาด) */
+        /* 📊 CHART CONTAINER STYLES (ปรับปรุงเพื่อความเสถียรสูงสุดในการเรนเดอร์ข้ามเบราว์เซอร์) */
         .chart-container {
             background: white;
             border-radius: 25px;
@@ -151,6 +158,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 100%;
         }
 
         .chart-title {
@@ -163,15 +171,16 @@
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 260px; /* ขยายขนาดเพิ่มขึ้นเล็กน้อยให้เต็มตากำลังดี */
-            height: 260px;
-            margin: 0 auto;  /* บังคับให้อยู่กึ่งกลางกล่องในฝั่ง CSS */
+            max-width: 260px;
+            height: 260px; /* บังคับความสูงล็อกไว้เพื่อป้องกัน Safari ปรับย่อผิดพลาด */
+            margin: 0 auto;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         #expenseChart {
+            display: block;
             width: 100% !important;
             height: 100% !important;
         }
@@ -195,6 +204,18 @@
             font-size: 16px;
             outline: none;
             transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-appearance: none; /* ล้างสไตล์ของ iOS */
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* ใส่ลูกศรจำลองสำหรับ Select บน iOS/Safari หลังโดนล้างสไตล์ */
+        select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%234a4e69' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 10px 6px;
+            padding-right: 35px;
         }
 
         input:focus, select:focus {
@@ -233,6 +254,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         button:active { transform: scale(0.95); }
@@ -254,17 +277,19 @@
 
         #month-filter {
             width: auto;
-            padding: 8px 12px;
+            padding: 8px 30px 8px 12px; /* เผื่อที่ให้ลูกศร SVG */
             font-size: 14px;
             border-radius: 12px;
             background: #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background-position: right 10px center;
         }
 
         .history-list {
             list-style: none;
             max-height: 280px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* เลื่อนรายชื่อลื่นไหลบน iOS Safari */
         }
 
         .history-list::-webkit-scrollbar { width: 5px; }
@@ -320,6 +345,8 @@
             justify-content: center;
             transition: transform 0.2s ease;
             width: auto;
+            -webkit-appearance: none;
+            appearance: none;
         }
         
         .action-btn:active { transform: scale(0.8); }
@@ -335,7 +362,7 @@
             top: -100px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             padding: 14px 28px;
@@ -611,7 +638,7 @@
         }
 
         // ==========================================
-        // 📊 ฟังก์ชันวาดกราฟวงกลม (จัดวางกึ่งกลางอย่างสมบูรณ์)
+        // 📊 ฟังก์ชันวาดกราฟวงกลม (เวอร์ชันเสถียรข้ามเบราว์เซอร์)
         // ==========================================
         function renderExpenseChart(expenseList) {
             if (expenseList.length === 0) {
@@ -671,18 +698,18 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: false, /* ปิดอัตราส่วนล็อกเดิมเพื่อจัดความสูงผ่าน CSS เองได้ */
                         layout: {
-                            padding: 0
+                            padding: 5
                         },
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                align: 'center', /* บังคับให้ป้ายชื่อข้อมูลอยู่ตรงกลาง */
+                                align: 'center',
                                 labels: {
                                     font: { family: 'Prompt', size: 12 },
                                     boxWidth: 12,
-                                    padding: 15
+                                    padding: 12
                                 }
                             }
                         }
