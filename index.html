@@ -93,7 +93,7 @@
             box-shadow: 0 0 0 2px var(--primary);
         }
 
-        /* เอฟเฟกต์กระพริบเบาๆ เวลา Auto-detect ทำงาน */
+        /* เอฟเฟกต์กระพริบเบาๆ เวลา Auto-detect / Auto-fill ทำงาน */
         .auto-changed {
             animation: highlightChange 0.5s ease;
         }
@@ -338,6 +338,7 @@
         const datalist = document.getElementById('note-suggestions');
         const monthFilter = document.getElementById('month-filter');
         const typeSelect = document.getElementById('type');
+        const amountInput = document.getElementById('amount');
         const noteInput = document.getElementById('note');
         
         const submitBtn = document.getElementById('submit-btn');
@@ -348,30 +349,49 @@
         let editId = null;
 
         // ==========================================
-        // 🤖 ระบบ AUTO-DETECT จัดหมวดหมู่อัตโนมัติ
+        // 🧠 ระบบ SMART AUTO-FILL (จำประวัติเดิม & คีย์เวิร์ด)
         // ==========================================
         const expenseKeywords = ["ค่า", "ซื้อ", "จ่าย", "ช้อป", "บิล", "หนี้", "โอนให้", "เติมเงิน"];
         const incomeKeywords = ["รับ", "เงินเดือน", "โอนเข้า", "ขาย", "ได้เงิน", "ถูกหวย", "เงินทอน"];
 
         noteInput.addEventListener('input', function() {
             const text = this.value.trim();
-            let newType = typeSelect.value;
+            if (!text) return; // ถ้าช่องว่างเปล่าไม่ต้องทำอะไร
 
-            // เช็คว่าคำที่พิมพ์ตรงกับคีย์เวิร์ดฝั่งไหน
-            if (expenseKeywords.some(keyword => text.includes(keyword))) {
-                newType = "minus";
-            } else if (incomeKeywords.some(keyword => text.includes(keyword))) {
-                newType = "plus";
+            let newType = typeSelect.value;
+            let foundPastMatch = false;
+
+            // 1. ค้นหาประวัติล่าสุดที่ชื่อตรงกันพอดี
+            // (เนื่องจาก transactions ถูกเรียงจากล่าสุดไปเก่าสุดอยู่แล้ว ตัวแรกที่เจอคือล่าสุดเสมอ)
+            const pastTx = transactions.find(t => t.note === text);
+
+            if (pastTx) {
+                // ดึงยอดเงินและประเภทจากประวัติเดิมมาเติมให้
+                amountInput.value = pastTx.amount;
+                newType = pastTx.type;
+                foundPastMatch = true;
+            } else {
+                // 2. ถ้าไม่ตรงประวัติเดิม ให้จับจากคีย์เวิร์ดแทน
+                if (expenseKeywords.some(keyword => text.includes(keyword))) {
+                    newType = "minus";
+                } else if (incomeKeywords.some(keyword => text.includes(keyword))) {
+                    newType = "plus";
+                }
             }
 
-            // ถ้ามีการเปลี่ยนประเภทอัตโนมัติ ให้ใส่เอฟเฟกต์เด้งเตือนเบาๆ
+            // แสดงเอฟเฟกต์กระพริบช่อง Type ถ้าระบบเปลี่ยนค่าให้
             if (newType !== typeSelect.value) {
                 typeSelect.value = newType;
-                
-                // ลบคลาสออกแล้วใส่ใหม่เพื่อให้แอนิเมชันเล่นซ้ำ
                 typeSelect.classList.remove('auto-changed');
-                void typeSelect.offsetWidth; // บังคับให้เบราว์เซอร์รีเซ็ต
+                void typeSelect.offsetWidth; 
                 typeSelect.classList.add('auto-changed');
+            }
+
+            // แสดงเอฟเฟกต์กระพริบช่อง Amount ถ้าระบบดึงตัวเลขเก่ามาเติมให้
+            if (foundPastMatch) {
+                amountInput.classList.remove('auto-changed');
+                void amountInput.offsetWidth;
+                amountInput.classList.add('auto-changed');
             }
         });
         // ==========================================
@@ -407,6 +427,7 @@
 
         function updateSuggestions() {
             datalist.innerHTML = '';
+            // นำประวัติเก่าๆ มารวมกับคำแนะนำตั้งต้น แล้วคัดอันที่ซ้ำออก
             const pastNotes = transactions.map(t => t.note);
             const allSuggestions = [...new Set([...defaultSuggestions, ...pastNotes])];
             allSuggestions.forEach(note => {
@@ -517,15 +538,15 @@
             if (!target) return;
 
             editId = id;
-            document.getElementById('type').value = target.type;
-            document.getElementById('amount').value = target.amount;
-            document.getElementById('note').value = target.note;
+            typeSelect.value = target.type;
+            amountInput.value = target.amount;
+            noteInput.value = target.note;
 
             submitBtn.innerText = "อัปเดตข้อมูล 🛠️";
             submitBtn.style.background = "#ffd166";
             cancelBtn.style.display = "block";
             
-            document.getElementById('amount').focus();
+            amountInput.focus();
         }
 
         function resetFormState() {
@@ -568,9 +589,9 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const type = document.getElementById('type').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const note = document.getElementById('note').value;
+            const type = typeSelect.value;
+            const amount = parseFloat(amountInput.value);
+            const note = noteInput.value.trim();
 
             try {
                 if (editId) {
