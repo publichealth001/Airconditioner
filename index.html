@@ -45,7 +45,44 @@
             text-rendering: optimizeLegibility;
         }
 
+        /* 🔐 LOGIN MODAL STYLES */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000;
+            padding: 20px;
+            transition: var(--transition-smooth);
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 40px 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .login-card h2 {
+            font-size: 20px;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .login-group {
+            margin-bottom: 15px;
+        }
+
+        /* CONTAINER (ซ่อนไว้เป็นค่าเริ่มต้นจนกว่าจะผ่านการเข้าสู่ระบบ) */
         .container {
+            display: none;
             width: 100%;
             max-width: 420px;
             background: var(--card-bg);
@@ -437,7 +474,7 @@
             gap: 10px;
             font-weight: 600;
             font-size: 15px;
-            z-index: 9999;
+            z-index: 99999;
             opacity: 0;
             pointer-events: none;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
@@ -469,6 +506,19 @@
     </style>
 </head>
 <body>
+
+    <div id="login-modal" class="login-overlay">
+        <div class="login-card">
+            <h2>🔐 ยืนยันตัวตน My Money Cloud</h2>
+            <div class="login-group">
+                <input type="text" id="username-input" placeholder="ชื่อผู้ใช้งาน (Username)" autocomplete="off">
+            </div>
+            <div class="login-group">
+                <input type="password" id="password-input" placeholder="รหัสผ่าน (Password)">
+            </div>
+            <button id="login-submit-btn">เข้าสู่ระบบ 🚀</button>
+        </div>
+    </div>
 
     <div id="toast" class="toast-container">
         <span id="toast-icon">✨</span>
@@ -577,6 +627,14 @@
         
         const transactionsRef = collection(db, "transactions");
 
+        // Auth Elements
+        const loginModal = document.getElementById('login-modal');
+        const mainContainer = document.querySelector('.container');
+        const usernameInput = document.getElementById('username-input');
+        const passwordInput = document.getElementById('password-input');
+        const loginSubmitBtn = document.getElementById('login-submit-btn');
+
+        // Main App Elements
         const form = document.getElementById('transaction-form');
         const grandTotalDisplay = document.getElementById('grand-total');
         const cashBalanceDisplay = document.getElementById('cash-balance');
@@ -603,7 +661,66 @@
         let transactions = [];
         let editId = null;
         let expenseChart = null;
+        let logoutTimeout = null;
 
+        // ==========================================
+        // 🔒 ระบบจัดการช่วงเวลาและสิทธิ์ผู้ใช้งาน (SECURITY HANDLER)
+        // ==========================================
+        function checkAuth() {
+            const loginTime = localStorage.getItem('mmc_login_time');
+            if (loginTime) {
+                const now = Date.now();
+                const oneHour = 60 * 60 * 1000; // 1 ชั่วโมงในหน่วยมิลลิวินาที
+                
+                if (now - parseInt(loginTime) < oneHour) {
+                    // เซสชันยังไม่หมดอายุ -> ปลดล็อกหน้าจอ
+                    loginModal.style.display = 'none';
+                    mainContainer.style.display = 'block';
+                    
+                    // ตั้งเวลาตัดการเชื่อมต่ออัตโนมัติตามเวลาที่เหลืออยู่
+                    const remainingTime = oneHour - (now - parseInt(loginTime));
+                    if(logoutTimeout) clearTimeout(logoutTimeout);
+                    logoutTimeout = setTimeout(executeLogout, remainingTime);
+                    return;
+                }
+            }
+            // หากไม่มีข้อมูลหรือหมดอายุแล้ว -> บังคับล็อกเอาต์
+            executeLogout();
+        }
+
+        function executeLogout() {
+            localStorage.removeItem('mmc_login_time');
+            loginModal.style.display = 'flex';
+            mainContainer.style.display = 'none';
+            usernameInput.value = '';
+            passwordInput.value = '';
+            if(logoutTimeout) clearTimeout(logoutTimeout);
+        }
+
+        loginSubmitBtn.addEventListener('click', function() {
+            const user = usernameInput.value.trim();
+            const pass = passwordInput.value.trim();
+
+            if (user === 'PPKK' && pass === '082197') {
+                localStorage.setItem('mmc_login_time', Date.now().toString());
+                loginModal.style.display = 'none';
+                mainContainer.style.display = 'block';
+                showToast("ยินดีต้อนรับเข้าสู่ระบบสำเร็จ! 🎉", "success");
+                
+                // ตั้งเวลาตัดเซสชันล่วงหน้า 1 ชั่วโมงเต็ม
+                if(logoutTimeout) clearTimeout(logoutTimeout);
+                logoutTimeout = setTimeout(executeLogout, 60 * 60 * 1000);
+            } else {
+                showToast("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง! ❌", "warning");
+            }
+        });
+
+        // รันตรวจสอบสิทธิ์ทันทีเมื่อโหลดหน้าเว็บ
+        checkAuth();
+
+        // ==========================================
+        // 🧠 ระบบ SMART AUTO-FILL
+        // ==========================================
         budgetInput.value = localStorage.getItem('monthly_budget') || 5000;
 
         budgetInput.addEventListener('input', function() {
@@ -613,9 +730,6 @@
             updateUI();
         });
 
-        // ==========================================
-        // 🧠 ระบบ SMART AUTO-FILL (ขยายสัญชาตญาณตรวจจับการย้ายเงิน)
-        // ==========================================
         const expenseKeywords = ["ค่า", "ซื้อ", "จ่าย", "ช้อป", "บิล", "หนี้", "โอนให้", "เติมเงิน"];
         const incomeKeywords = ["รับ", "เงินเดือน", "โอนเข้า", "ขาย", "ได้เงิน", "ถูกหวย", "เงินทอน"];
         const transferKeywords = ["ฝากเงิน", "เอาเงินเข้าธนาคาร", "ถอนเงิน", "กดเงิน", "ย้ายเงิน", "โอนเข้าบัญชีตัวเอง"];
@@ -637,11 +751,10 @@
             } else {
                 if (transferKeywords.some(keyword => text.includes(keyword))) {
                     newType = "move";
-                    // ปรับหน้า UI ตัวเลือกวิธีการให้สอดคล้อง
                     if(text.includes("ฝาก") || text.includes("เข้าธนาคาร")) {
-                        methodSelect.value = "transfer"; // วิ่งเข้าธนาคาร
+                        methodSelect.value = "transfer"; 
                     } else if(text.includes("ถอน") || text.includes("กดเงิน")) {
-                        methodSelect.value = "cash"; // วิ่งเข้ากระเป๋าเงินสด
+                        methodSelect.value = "cash"; 
                     }
                 } else if (expenseKeywords.some(keyword => text.includes(keyword))) {
                     newType = "minus";
@@ -756,7 +869,6 @@
             let currentMonthExpenses = 0;  
             const selectedMonth = monthFilter.value;
 
-            // 1. คำนวณยอดเงินสะสมแบบครอบคลุมฟังก์ชัน "ย้ายเงิน"
             transactions.forEach(t => {
                 if (t.type === 'plus') {
                     if (t.method === 'cash') absoluteCashBalance += t.amount;
@@ -765,11 +877,10 @@
                     if (t.method === 'cash') absoluteCashBalance -= t.amount;
                     else absoluteBankBalance -= t.amount;
                 } else if (t.type === 'move') {
-                    // ย้ายเงิน: ถ้าปลายทางคือโอน (ฝากเงิน) = หักเงินสด เพิ่มธนาคาร
                     if (t.method === 'transfer') {
                         absoluteCashBalance -= t.amount;
                         absoluteBankBalance += t.amount;
-                    } else { // ปลายทางคือเงินสด (ถอนเงิน) = หักธนาคาร เพิ่มเงินสด
+                    } else { 
                         absoluteBankBalance -= t.amount;
                         absoluteCashBalance += t.amount;
                     }
@@ -782,7 +893,6 @@
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth;
             });
 
-            // คัดกรองรายจ่ายแท้จริงไปลงกราฟวงกลม (ไม่นำเรื่องย้ายเงินไปคิดให้เป้าหมายเพี้ยน)
             const currentExpensesList = filteredTransactions.filter(t => t.type === 'minus');
 
             if (filteredTransactions.length === 0) {
@@ -800,7 +910,6 @@
                 let signText = t.type === 'plus' ? '+' : '-';
                 let amountColor = t.type === 'plus' ? '#7cb55e' : '#e07a64';
 
-                // ปรับแต่งข้อความแสดงในลิสต์ประวัติหากเป็นรายการย้ายเงิน
                 if (t.type === 'move') {
                     typeClass = 'move';
                     signText = '🔄 ';
