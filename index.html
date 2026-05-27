@@ -140,7 +140,7 @@
             color: #7a7f9a;
         }
 
-        /* 📊 CHART CONTAINER STYLES */
+        /* 📊 CHART CONTAINER STYLES (ปรับจัดกึ่งกลางและขยายขนาด) */
         .chart-container {
             background: white;
             border-radius: 25px;
@@ -150,6 +150,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
 
         .chart-title {
@@ -162,8 +163,17 @@
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 220px;
-            height: 220px;
+            max-width: 260px; /* ขยายขนาดเพิ่มขึ้นเล็กน้อยให้เต็มตากำลังดี */
+            height: 260px;
+            margin: 0 auto;  /* บังคับให้อยู่กึ่งกลางกล่องในฝั่ง CSS */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #expenseChart {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .form-group {
@@ -601,7 +611,7 @@
         }
 
         // ==========================================
-        // 📊 ฟังก์ชันวาด / อัปเดตกราฟวงกลมสรุปรายจ่าย (FIXED)
+        // 📊 ฟังก์ชันวาดกราฟวงกลม (จัดวางกึ่งกลางอย่างสมบูรณ์)
         // ==========================================
         function renderExpenseChart(expenseList) {
             if (expenseList.length === 0) {
@@ -641,7 +651,6 @@
                 });
             }
 
-            // แก้ไขตรงนี้เรียบร้อย: .getContext('2d') ทำงานได้ถูกต้องแล้ว 🛠️
             const ctx = document.getElementById('expenseChart').getContext('2d');
             
             if (expenseChart) {
@@ -663,12 +672,17 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: 0
+                        },
                         plugins: {
                             legend: {
                                 position: 'bottom',
+                                align: 'center', /* บังคับให้ป้ายชื่อข้อมูลอยู่ตรงกลาง */
                                 labels: {
                                     font: { family: 'Prompt', size: 12 },
-                                    boxWidth: 12
+                                    boxWidth: 12,
+                                    padding: 15
                                 }
                             }
                         }
@@ -725,7 +739,6 @@
                 list.appendChild(li);
             });
 
-            // คำนวณหลอดงบประมาณ
             const budgetLimit = parseFloat(budgetInput.value) || 0;
             budgetUsedLabel.innerText = `ใช้ไป: ฿${currentMonthExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
