@@ -6,7 +6,7 @@
     <title>My Money Cloud 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* CSS: สไตล์ iOS น่ารัก ลื่นไหล มินิมอล และ Responsive */
+        /* CSS: ดีไซน์พาสเทลมินิมอล ลื่นไหล สไตล์ iOS */
         :root {
             --bg-color: #f7f9fc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -15,6 +15,7 @@
             --expense: #ffb4a2;
             --text-dark: #4a4e69;
             --delete-btn: #ffb4b4;
+            --edit-btn: #ffd166;
         }
 
         * {
@@ -96,6 +97,13 @@
             margin-bottom: 20px;
         }
 
+        /* ส่วนของกลุ่มปุ่มกดบันทึก/แก้ไข */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
         button {
             width: 100%;
             padding: 16px;
@@ -108,11 +116,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            margin-bottom: 25px;
         }
 
-        button:active {
-            transform: scale(0.95);
+        button:active { transform: scale(0.95); }
+
+        #cancel-btn {
+            background: #cbd5e1;
+            color: #64748b;
+            display: none; /* ซ่อนไว้ก่อน จะโผล่มาตอนกดแก้ไข */
         }
 
         .history-header {
@@ -140,10 +151,7 @@
         }
 
         .history-list::-webkit-scrollbar { width: 5px; }
-        .history-list::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 10px;
-        }
+        .history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 
         .item {
             display: flex;
@@ -181,27 +189,62 @@
 
         .item-note { word-break: break-word; font-weight: 400; }
         .item-date { font-size: 11px; color: #a0a5ba; margin-top: 2px; }
-        .item-right { display: flex; align-items: center; gap: 12px; }
-        .item-amount { font-weight: 600; white-space: nowrap; }
+        .item-right { display: flex; align-items: center; gap: 8px; }
+        .item-amount { font-weight: 600; white-space: nowrap; margin-right: 4px; }
 
-        .delete-btn {
+        /* ปุ่มจัดการรายการประวัติ */
+        .action-btn {
             background: none;
             border: none;
-            color: var(--delete-btn);
             cursor: pointer;
-            padding: 5px;
-            font-size: 16px;
+            padding: 6px;
+            font-size: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s ease, color 0.2s ease;
+            transition: transform 0.2s ease;
             width: auto;
-            margin-bottom: 0;
         }
         
-        .delete-btn:hover { color: #ff5c5c; }
-        .delete-btn:active { transform: scale(0.8); }
+        .action-btn:active { transform: scale(0.8); }
+        .delete-btn-icon { color: var(--delete-btn); }
+        .delete-btn-icon:hover { color: #ff5c5c; }
+        .edit-btn-icon { color: #cbd5e1; }
+        .edit-btn-icon:hover { color: #94a3b8; }
+
         .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
+
+        /* 🔔 สไตล์กล่องแจ้งเตือน Toast แจ้งเตือนสุดล้ำ */
+        .toast-container {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 14px 28px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            z-index: 9999;
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast-container.show {
+            top: 25px;
+            opacity: 1;
+        }
+
+        .toast-success { border-left: 5px solid var(--income); color: #52793d; }
+        .toast-info { border-left: 5px solid var(--primary); color: #5b65b3; }
+        .toast-delete { border-left: 5px solid var(--expense); color: #c26753; }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(15px); }
@@ -219,6 +262,11 @@
     </style>
 </head>
 <body>
+
+    <div id="toast" class="toast-container">
+        <span id="toast-icon">✨</span>
+        <span id="toast-text">ทำรายการสำเร็จ!</span>
+    </div>
 
     <div class="container">
         <h1>My Money Cloud 💸</h1>
@@ -240,7 +288,10 @@
             <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร..." required autocomplete="off">
             <datalist id="note-suggestions"></datalist>
 
-            <button type="submit">บันทึกข้อมูล ✨</button>
+            <div class="btn-group">
+                <button type="submit" id="submit-btn">บันทึกข้อมูล ✨</button>
+                <button type="button" id="cancel-btn">ยกเลิก ❌</button>
+            </div>
         </form>
 
         <div class="history-header">
@@ -257,7 +308,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // คอนฟิกูเรชันโปรเจกต์ของคุณ boonsomair-3f5b0
         const firebaseConfig = {
@@ -269,7 +320,6 @@
             appId: "1:831800219771:web:97243e82b452a14e0a2ade"
         };
 
-        // Initialize Firebase & Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const transactionsRef = collection(db, "transactions");
@@ -280,14 +330,44 @@
         const list = document.getElementById('list');
         const datalist = document.getElementById('note-suggestions');
         const monthFilter = document.getElementById('month-filter');
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const toast = document.getElementById('toast');
 
         let transactions = [];
+        let editId = null; // ไว้เก็บ ID ไอเทมที่กำลังแก้ไขอยู่ (ถ้าเป็น null แปลว่าโหมดบันทึกปกติ)
 
         const defaultSuggestions = [
             "ชาไข่มุก 🧋", "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", 
             "ช้อปปิ้ง 🛍️", "ค่าเน็ต/โทรศัพท์ 📱", "เงินเดือน 💰", 
             "ขนมจุกจิก 🍫", "กาแฟ ☕", "โอนให้เพื่อน 💸"
         ];
+
+        // 🔔 ฟังก์ชันเรียกโชว์หน้าต่างแจ้งเตือนสุดคิวท์
+        function showToast(text, type = 'success') {
+            const toastText = document.getElementById('toast-text');
+            const toastIcon = document.getElementById('toast-icon');
+            
+            toastText.innerText = text;
+            toast.className = "toast-container show"; // รีเซ็ตคลาสรีรันการโชว์
+            
+            if (type === 'success') {
+                toast.classList.add('toast-success');
+                toastIcon.innerText = '🎉';
+            } else if (type === 'info') {
+                toast.classList.add('toast-info');
+                toastIcon.innerText = '🛠️';
+            } else if (type === 'delete') {
+                toast.classList.add('toast-delete');
+                toastIcon.innerText = '🗑️';
+            }
+
+            // แสดงผล 2.5 วินาทีแล้วค่อยๆ เก็บตัวกลับขึ้นไปด้านบน
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 250);
+        }
 
         function updateSuggestions() {
             datalist.innerHTML = '';
@@ -363,17 +443,26 @@
                         <span class="item-amount" style="color: ${t.type === 'plus' ? '#7cb55e' : '#e07a64'};">
                             ${t.type === 'plus' ? '+' : '-'}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                         </span>
-                        <button class="delete-btn" data-delete-id="${t.id}">🗑️</button>
+                        <button class="action-btn edit-btn-icon" data-edit-id="${t.id}">✏️</button>
+                        <button class="action-btn delete-btn-icon" data-delete-id="${t.id}">🗑️</button>
                     </div>
                 `;
                 list.appendChild(li);
             });
 
-            // ผูก Event Listener ให้ปุ่มลบทุกปุ่ม
-            document.querySelectorAll('.delete-btn').forEach(btn => {
+            // ผูกเหตุการณ์ให้ปุ่มลบ
+            document.querySelectorAll('.delete-btn-icon').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-delete-id');
                     deleteTransaction(id);
+                });
+            });
+
+            // ผูกเหตุการณ์ให้ปุ่มแก้ไข
+            document.querySelectorAll('.edit-btn-icon').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-edit-id');
+                    startEdit(id);
                 });
             });
 
@@ -389,7 +478,36 @@
             updateSuggestions();
         }
 
-        // ฟังก์ชันลบรายการแบบ Realtime ออกจาก Cloud
+        // เข้าสู่โหมดแก้ไขข้อมูล
+        function startEdit(id) {
+            const target = transactions.find(t => t.id === id);
+            if (!target) return;
+
+            editId = id; // ล็อก ID ที่จะแก้ไข
+            document.getElementById('type').value = target.type;
+            document.getElementById('amount').value = target.amount;
+            document.getElementById('note').value = target.note;
+
+            // แปลงร่างปุ่มกดยืนยันให้ชัดเจนขึ้น
+            submitBtn.innerText = "อัปเดตข้อมูล 🛠️";
+            submitBtn.style.background = "#ffd166"; // เปลี่ยนเป็นสีส้ม/เหลือง
+            cancelBtn.style.display = "block"; // เปิดปุ่มยกเลิกตัวเลือกขึ้นมา
+            
+            document.getElementById('amount').focus(); // เลื่อนโฟกัสไปช่องกรอกเงินทันที
+        }
+
+        // ยกเลิกโหมดแก้ไข ล้างค่าฟอร์มกลับเป็นปกติ
+        function resetFormState() {
+            editId = null;
+            form.reset();
+            submitBtn.innerText = "บันทึกข้อมูล ✨";
+            submitBtn.style.background = "var(--primary)";
+            cancelBtn.style.display = "none";
+        }
+
+        cancelBtn.addEventListener('click', resetFormState);
+
+        // ฟังก์ชันลบรายการแบบมีแอนิเมชัน
         async function deleteTransaction(id) {
             const itemElement = document.querySelector(`[data-id="${id}"]`);
             if (itemElement) {
@@ -397,6 +515,8 @@
                 setTimeout(async () => {
                     try {
                         await deleteDoc(doc(db, "transactions", id));
+                        showToast("ลบรายการเรียบร้อยแล้ว", "delete");
+                        if (editId === id) resetFormState(); // หากกำลังแก้รายการนี้อยู่แล้วกดลบ ให้ล้างฟอร์มด้วย
                     } catch (error) {
                         console.error("Error deleting document: ", error);
                     }
@@ -404,7 +524,7 @@
             }
         }
 
-        // ดักฟังการอัปเดตข้อมูลบน Firebase แบบ Realtime (เปิดคอมคู่กับมือถือ ข้อมูลจะเด้งพร้อมกันทันที)
+        // ฟังการอัปเดตแบบเรียลไทม์จาก Firebase
         const q = query(transactionsRef, orderBy("date", "desc"));
         onSnapshot(q, (snapshot) => {
             transactions = [];
@@ -415,7 +535,7 @@
             updateUI();
         });
 
-        // เมื่อผู้ใช้กดยืนยันบันทึกรายการ
+        // เมื่อกดส่งฟอร์ม (ทั้งบันทึกใหม่ หรือ อัปเดตของเก่า)
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -424,16 +544,31 @@
             const note = document.getElementById('note').value;
 
             try {
-                await addDoc(transactionsRef, {
-                    type,
-                    amount,
-                    note,
-                    date: new Date().toISOString()
-                });
-                form.reset();
+                if (editId) {
+                    // 🛠️ โหมดอัปเดตข้อมูลเดิมบน Firebase
+                    const docRef = doc(db, "transactions", editId);
+                    await updateDoc(docRef, {
+                        type,
+                        amount,
+                        note
+                        // เก็บวันที่เดิมไว้ ไม่เปลี่ยนเพื่อคงตำแหน่งและเดือนเดิม
+                    });
+                    showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
+                    resetFormState();
+                } else {
+                    // ✨ โหมดบันทึกรายการใหม่แกะกล่อง
+                    await addDoc(transactionsRef, {
+                        type,
+                        amount,
+                        note,
+                        date: new Date().toISOString()
+                    });
+                    showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
+                    form.reset();
+                }
             } catch (error) {
-                console.error("Error adding document: ", error);
-                alert("เกิดข้อผิดพลาด! ลองตรวจสอบ Firebase Rules ของคุณอีกครั้งนะคราบบบ");
+                console.error("Error writing document: ", error);
+                alert("เกิดข้อผิดพลาดในการติดต่อกับ Firebase!");
             }
         });
 
