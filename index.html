@@ -18,9 +18,8 @@
             --delete-btn: #ffb4b4;
             --edit-btn: #ffd166;
             --warning: #ffcb77;
-            /* สัดส่วนจังหวะแอนิเมชันแบบสากล ลื่นตาที่สุด */
-            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --transition-snappy: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            var(--transition-smooth): all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            var(--transition-snappy): all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -40,7 +39,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* เพิ่ม Font Rendering ให้ตัวหนังสือคมชัดและเลื่อนสมูทขึ้น */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
@@ -147,7 +145,6 @@
             width: 0%;
             background: var(--income);
             border-radius: 10px;
-            /* เพิ่มความสมูทในการวิ่งของหลอดพลัง */
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
             will-change: width;
         }
@@ -229,7 +226,6 @@
             padding-right: 35px;
         }
 
-        /* เอฟเฟกต์ยกตัวขึ้นนุ่มๆ ตอนโฟกัสกดพิมพ์ */
         input:focus, select:focus {
             background: #fff;
             box-shadow: 0 10px 20px rgba(168, 178, 255, 0.15), 0 0 0 2px var(--primary);
@@ -312,7 +308,7 @@
             list-style: none;
             max-height: 280px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* สกรอลล์แบบมีแรงเฉื่อย ลื่นๆ บน iOS */
+            -webkit-overflow-scrolling: touch; 
         }
 
         .history-list::-webkit-scrollbar { width: 5px; }
@@ -341,7 +337,6 @@
         .item.plus { border-left: 6px solid var(--income); }
         .item.minus { border-left: 6px solid var(--expense); }
 
-        /* อนิเมชันตอนกดลบรายการให้ยุบตัวนุ่มนวลที่สุด */
         .item.fade-out {
             opacity: 0;
             transform: scale(0.85) translateY(-15px);
@@ -388,12 +383,10 @@
 
         .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
 
-        /* 👑 ปรับปรุง Toast ให้ใช้ GPU Transform ลื่นไหลไร้รอยต่อ 60FPS */
         .toast-container {
             position: fixed;
             top: 25px;
             left: 50%;
-            /* เริ่มต้นซ่อนไว้ข้างบน และใช้ transform แทนการเลื่อน top */
             transform: translate(-50%, -150%);
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -615,9 +608,8 @@
             
             toastText.innerText = text;
             
-            // ล้างคลาสประเภทเก่าออกก่อนรันแอนิเมชันใหม่
             toast.className = "toast-container";
-            void toast.offsetWidth; // บังคับสลับเฟรมวาดซ้ำเพื่อความลื่นไหล
+            void toast.offsetWidth; 
             
             toast.className = "toast-container show";
             
@@ -725,7 +717,7 @@
             if (expenseChart) {
                 expenseChart.data.labels = finalLabels;
                 expenseChart.data.datasets[0].data = finalData;
-                expenseChart.update(); // อัปเดตข้อมูลเก่าแบบสมูท
+                expenseChart.update(); 
             } else {
                 expenseChart = new Chart(ctx, {
                     type: 'pie',
@@ -741,7 +733,6 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        // ✨ ปรับแต่ง Easing อนิเมชันของกราฟให้พรีเมียม
                         animation: {
                             duration: 800,
                             easing: 'easeOutQuart'
@@ -887,19 +878,22 @@
 
         cancelBtn.addEventListener('click', resetFormState);
 
-        async function deleteTransaction(id) {
+        // ⚡️ ฟังก์ชันลบที่ปรับเป็น Optimistic UI (ตอบสนองทันที ไม่รอเน็ต)
+        function deleteTransaction(id) {
             const itemElement = document.querySelector(`[data-id="${id}"]`);
             if (itemElement) {
-                itemElement.classList.add('fade-out'); // สั่งเล่นเอฟเฟกต์ GPU Collapse
-                setTimeout(async () => {
-                    try {
-                        await deleteDoc(doc(db, "transactions", id));
-                        showToast("ลบรายการเรียบร้อยแล้ว", "delete");
-                        if (editId === id) resetFormState();
-                    } catch (error) {
-                        console.error("Error deleting document: ", error);
-                    }
-                }, 300); // ทำลายข้อมูลหลังจบแอนิเมชันพอดี
+                // แสดงแอนิเมชันลบทิ้ง และแจ้งเตือนทันที 0 วินาที
+                itemElement.classList.add('fade-out');
+                showToast("ลบรายการเรียบร้อยแล้ว", "delete");
+                if (editId === id) resetFormState();
+
+                // สั่ง Firebase ลบเบื้องหลังอย่างเงียบๆ
+                setTimeout(() => {
+                    deleteDoc(doc(db, "transactions", id)).catch(error => {
+                        console.error("ลบไม่ได้: ", error);
+                        showToast("เกิดข้อผิดพลาด กรุณาลองใหม่", "warning");
+                    });
+                }, 300);
             }
         }
 
@@ -914,52 +908,59 @@
             updateUI();
         });
 
-        form.addEventListener('submit', async function(e) {
+        // ⚡️ ฟังก์ชันบันทึกที่ปรับเป็น Optimistic UI
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const type = typeSelect.value;
             const amount = parseFloat(amountInput.value);
             const note = noteInput.value.trim();
 
-            try {
-                if (editId) {
-                    const docRef = doc(db, "transactions", editId);
-                    await updateDoc(docRef, {
-                        type,
-                        amount,
-                        note
-                    });
-                    showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
-                    resetFormState();
-                } else {
-                    await addDoc(transactionsRef, {
-                        type,
-                        amount,
-                        note,
-                        date: new Date().toISOString()
-                    });
+            if (editId) {
+                // จัดการหน้าจอทันทีเมื่ออัปเดต
+                const targetId = editId;
+                resetFormState();
+                showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
+                
+                // โยนคำสั่งอัปเดตไปหลังบ้าน
+                updateDoc(doc(db, "transactions", targetId), {
+                    type, amount, note
+                }).catch(err => {
+                    console.error("อัปเดตไม่ได้: ", err);
+                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "warning");
+                });
 
-                    const budgetLimit = parseFloat(budgetInput.value) || 0;
-                    if (type === 'minus' && budgetLimit > 0) {
-                        const currentMonthStr = new Date().toISOString().substring(0, 7); 
-                        const thisMonthExpenses = transactions
-                            .filter(t => t.type === 'minus' && t.date.startsWith(currentMonthStr))
-                            .reduce((sum, t) => sum + t.amount, 0) + amount;
+            } else {
+                // เช็คสถานะงบประมาณล่วงหน้าจากข้อมูลในเครื่อง (ไม่ต้องดึงใหม่จากเน็ต)
+                const budgetLimit = parseFloat(budgetInput.value) || 0;
+                if (type === 'minus' && budgetLimit > 0) {
+                    const currentMonthStr = new Date().toISOString().substring(0, 7); 
+                    const thisMonthExpenses = transactions
+                        .filter(t => t.type === 'minus' && t.date.startsWith(currentMonthStr))
+                        .reduce((sum, t) => sum + t.amount, 0) + amount;
 
-                        if (thisMonthExpenses > budgetLimit) {
-                            showToast(`เตือนสติ! เดือนนี้คุณใช้เงินเกินงบไปแล้วนะตัวเธอ 🚨`, "warning");
-                        } else {
-                            showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
-                        }
+                    if (thisMonthExpenses > budgetLimit) {
+                        showToast(`เตือนสติ! เดือนนี้คุณใช้เงินเกินงบไปแล้วนะตัวเธอ 🚨`, "warning");
                     } else {
                         showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
                     }
-                    
-                    form.reset();
+                } else {
+                    showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
                 }
-            } catch (error) {
-                console.error("Error writing document: ", error);
-                alert("เกิดข้อผิดพลาดในการติดต่อกับ Firebase!");
+                
+                // ล้างฟอร์มและตอบสนองผู้ใช้ทันที
+                form.reset();
+                
+                // โยนคำสั่งบันทึกไปหลังบ้าน
+                addDoc(transactionsRef, {
+                    type,
+                    amount,
+                    note,
+                    date: new Date().toISOString()
+                }).catch(err => {
+                    console.error("บันทึกไม่ได้: ", err);
+                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "warning");
+                });
             }
         });
 
