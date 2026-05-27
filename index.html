@@ -128,7 +128,7 @@
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: var(--income); /* ปกติเป็นสีเขียวพาสเทล */
+            background: var(--income);
             border-radius: 10px;
             transition: width 0.5s ease, background-color 0.3s ease;
         }
@@ -346,7 +346,7 @@
         .toast-success { border-left: 5px solid var(--income); color: #52793d; }
         .toast-info { border-left: 5px solid var(--primary); color: #5b65b3; }
         .toast-delete { border-left: 5px solid var(--expense); color: #c26753; }
-        .toast-warning { border-left: 5px solid #ff5c5c; color: #b03a3a; } /* สไตล์แจ้งเตือนถังแตก */
+        .toast-warning { border-left: 5px solid #ff5c5c; color: #b03a3a; }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(15px); }
@@ -477,17 +477,15 @@
 
         let transactions = [];
         let editId = null;
-        let expenseChart = null; // เก็บ Instance ของตัวกราฟ
+        let expenseChart = null;
 
-        // โหลดค่างบประมาณที่เคยบันทึกไว้ในเครื่อง (ถ้าไม่มีให้ใช้ 5000 เป็นค่าเริ่มต้น)
         budgetInput.value = localStorage.getItem('monthly_budget') || 5000;
 
-        // ดักจับเมื่อผู้ใช้แก้ไขงบประมาณ
         budgetInput.addEventListener('input', function() {
             let val = parseFloat(this.value);
             if (isNaN(val) || val < 0) val = 0;
             localStorage.setItem('monthly_budget', val);
-            updateUI(); // คำนวณหลอดและกราฟใหม่ทันที
+            updateUI();
         });
 
         // ==========================================
@@ -603,7 +601,7 @@
         }
 
         // ==========================================
-        // 📊 ฟังก์ชันวาด / อัปเดตกราฟวงกลมสรุปรายจ่าย
+        // 📊 ฟังก์ชันวาด / อัปเดตกราฟวงกลมสรุปรายจ่าย (FIXED)
         // ==========================================
         function renderExpenseChart(expenseList) {
             if (expenseList.length === 0) {
@@ -612,19 +610,16 @@
             }
             chartSection.style.display = 'block';
 
-            // 1. จัดกลุ่มและรวมยอดเงินตามชื่อรายการ
             const groupedData = {};
             expenseList.forEach(item => {
                 groupedData[item.note] = (groupedData[item.note] || 0) + item.amount;
             });
 
-            // 2. แปลงเป็นอาเรย์เพื่อนำไปเรียงลำดับจากมากไปน้อย
             const sortedItems = Object.keys(groupedData).map(key => ({
                 note: key,
                 amount: groupedData[key]
             })).sort((a, b) => b.amount - a.amount);
 
-            // 3. คัดเอา Top 4 ลำดับแรก ส่วนที่เหลือให้รวมเป็นกลุ่ม "อื่นๆ"
             let finalLabels = [];
             let finalData = [];
 
@@ -646,16 +641,14 @@
                 });
             }
 
-            // 4. สร้างหรืออัปเดตออบเจกต์ Chart.js
-            const ctx = document.getElementById('expenseChart').getContext('2-digit');
+            // แก้ไขตรงนี้เรียบร้อย: .getContext('2d') ทำงานได้ถูกต้องแล้ว 🛠️
+            const ctx = document.getElementById('expenseChart').getContext('2d');
             
             if (expenseChart) {
-                // ถ้ามีกราฟเดิมอยู่แล้ว ให้เปลี่ยนข้อมูลแล้วกดอัปเดตเพื่อความสมูท
                 expenseChart.data.labels = finalLabels;
                 expenseChart.data.datasets[0].data = finalData;
                 expenseChart.update();
             } else {
-                // ถ้ายังไม่มี ให้สร้างขึ้นมาใหม่พร้อมตั้งค่าสีพาสเทลสวยๆ
                 expenseChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
@@ -686,11 +679,10 @@
 
         function updateUI() {
             list.innerHTML = '';
-            let totalBalance = 0; // ยอดเงินรวมทั้งหมดในบัญชี
-            let currentMonthExpenses = 0; // ยอดรวมรายจ่ายประจำเดือนที่เลือก
+            let totalBalance = 0; 
+            let currentMonthExpenses = 0; 
             const selectedMonth = monthFilter.value;
 
-            // กรองข้อมูลรายการตามเดือนที่เลือก
             const filteredTransactions = transactions.filter(t => {
                 if (selectedMonth === 'all') return true;
                 const d = new Date(t.date);
@@ -698,7 +690,6 @@
                 return itemMonth === selectedMonth;
             });
 
-            // แยกกรองเฉพาะ "รายจ่าย" ของช่วงเวลาที่ระบุ เพื่อเอาไปโยนเข้ากราฟ
             const currentExpensesList = filteredTransactions.filter(t => t.type === 'minus');
 
             if (filteredTransactions.length === 0) {
@@ -709,7 +700,7 @@
                 if (t.type === 'plus') totalBalance += t.amount;
                 else {
                     totalBalance -= t.amount;
-                    currentMonthExpenses += t.amount; // สะสมยอดรายจ่าย
+                    currentMonthExpenses += t.amount;
                 }
 
                 const d = new Date(t.date);
@@ -734,9 +725,7 @@
                 list.appendChild(li);
             });
 
-            // ==========================================
-            // ⚠️ คำนวณและอัปเดตแถบความคืบหน้างบประมาณ (Budget Progress)
-            // ==========================================
+            // คำนวณหลอดงบประมาณ
             const budgetLimit = parseFloat(budgetInput.value) || 0;
             budgetUsedLabel.innerText = `ใช้ไป: ฿${currentMonthExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
@@ -745,13 +734,12 @@
                 budgetPercentLabel.innerText = `${Math.round((currentMonthExpenses / budgetLimit) * 100)}%`;
                 budgetProgress.style.width = `${percent}%`;
 
-                // เปลี่ยนสีแถบตามความดุเดือดของการใช้เงิน
                 if (percent >= 100) {
-                    budgetProgress.style.backgroundColor = '#ffb4b4'; // แดงพาสเทล (เกินงบแล้ว)
+                    budgetProgress.style.backgroundColor = '#ffb4b4'; 
                 } else if (percent >= 80) {
-                    budgetProgress.style.backgroundColor = '#ffd166'; // ส้มเหลืองพาสเทล (ใกล้เต็มหลอด)
+                    budgetProgress.style.backgroundColor = '#ffd166'; 
                 } else {
-                    budgetProgress.style.backgroundColor = '#b5e48c'; // เขียวพาสเทล (ปลอดภัย)
+                    budgetProgress.style.backgroundColor = '#b5e48c'; 
                 }
             } else {
                 budgetPercentLabel.innerText = '0%';
@@ -759,7 +747,6 @@
                 budgetProgress.style.backgroundColor = '#b5e48c';
             }
 
-            // จัดการหัวข้อการแสดงผลเงินคงเหลือ
             if (selectedMonth === 'all') {
                 balanceTitle.innerText = "ยอดเงินคงเหลือ (ทั้งหมด)";
             } else {
@@ -770,10 +757,8 @@
 
             balanceDisplay.innerText = `฿${totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
-            // เรียกฟังก์ชันวาดกราฟวงกลมรายจ่าย
             renderExpenseChart(currentExpensesList);
 
-            // ฝัง Event Listener ให้ปุ่ม แก้ไข/ลบ เหมือนเดิม
             document.querySelectorAll('.delete-btn-icon').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-delete-id');
@@ -869,11 +854,9 @@
                         date: new Date().toISOString()
                     });
 
-                    // 🚨 ตรวจสอบเช็คถังแตกหลังการเพิ่มข้อมูลรายจ่ายใหม่ทันที!
                     const budgetLimit = parseFloat(budgetInput.value) || 0;
                     if (type === 'minus' && budgetLimit > 0) {
-                        // คำนวณรายจ่ายของเดือนปัจจุบันทั้งหมดแบบคร่าวๆ ณ เสี้ยววินาทีนั้น
-                        const currentMonthStr = new Date().toISOString().substring(0, 7); // "YYYY-MM"
+                        const currentMonthStr = new Date().toISOString().substring(0, 7); 
                         const thisMonthExpenses = transactions
                             .filter(t => t.type === 'minus' && t.date.startsWith(currentMonthStr))
                             .reduce((sum, t) => sum + t.amount, 0) + amount;
