@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS: ดีไซน์พาสเทลมินิมอล ลื่นไหล เสถียรทุกเบราว์เซอร์ */
+        /* CSS: ดีไซน์พาสเทลพรีเมียม และเร่งประสิทธิภาพความลื่นไหลด้วย GPU */
         :root {
             --bg-color: #f7f9fc;
-            --card-bg: rgba(255, 255, 255, 0.9); /* เพิ่มความทึบเล็กน้อยเผื่อเบราว์เซอร์ไม่รองรับ blur */
+            --card-bg: rgba(255, 255, 255, 0.9);
             --primary: #a8b2ff;
             --income: #b5e48c;
             --expense: #ffb4a2;
@@ -18,38 +18,43 @@
             --delete-btn: #ffb4b4;
             --edit-btn: #ffd166;
             --warning: #ffcb77;
+            /* สัดส่วนจังหวะแอนิเมชันแบบสากล ลื่นตาที่สุด */
+            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-snappy: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            /* ป้องกันการไฮไลท์สีฟ้าเวลาเผลอกดเบิ้ลบนมือถือ */
             -webkit-tap-highlight-color: transparent; 
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: #8ec5fc; /* สีสำรองกรณี Gradient ไม่โหลด */
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            background-attachment: fixed; /* ล็อกพื้นหลังให้เสถียรบนโมบายล์ */
+            background-attachment: fixed;
             color: var(--text-dark);
             padding: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* เพิ่ม Font Rendering ให้ตัวหนังสือคมชัดและเลื่อนสมูทขึ้น */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         .container {
             width: 100%;
             max-width: 420px;
             background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px); /* รองรับ Safari และ iOS */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 35px;
             padding: 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
             margin-top: 20px;
             margin-bottom: 20px;
         }
@@ -61,12 +66,11 @@
         }
 
         .balance-card {
-            background: #ffffff;
-            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            background: linear-gradient(135deg, #fff 0%, #f5f7fa 100%);
             border-radius: 25px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
             margin-bottom: 15px;
         }
 
@@ -82,7 +86,7 @@
             border-radius: 22px;
             padding: 18px;
             margin-bottom: 25px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.02);
         }
 
         .budget-header {
@@ -101,6 +105,12 @@
             padding: 4px 10px;
             border-radius: 12px;
             max-width: 140px;
+            transition: var(--transition-snappy);
+        }
+
+        .budget-input-wrapper:focus-within {
+            background: #fff;
+            box-shadow: 0 0 0 2px var(--primary);
         }
 
         .budget-input-wrapper span {
@@ -119,7 +129,7 @@
             color: var(--text-dark);
             outline: none;
             text-align: right;
-            -webkit-appearance: none; /* ล้างสไตล์เริ่มต้นของ iOS */
+            -webkit-appearance: none;
             border-radius: 0;
         }
 
@@ -137,7 +147,9 @@
             width: 0%;
             background: var(--income);
             border-radius: 10px;
-            transition: width 0.5s ease, background-color 0.3s ease;
+            /* เพิ่มความสมูทในการวิ่งของหลอดพลัง */
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+            will-change: width;
         }
 
         .budget-stats {
@@ -147,13 +159,13 @@
             color: #7a7f9a;
         }
 
-        /* 📊 CHART CONTAINER STYLES (ปรับปรุงเพื่อความเสถียรสูงสุดในการเรนเดอร์ข้ามเบราว์เซอร์) */
+        /* 📊 CHART CONTAINER STYLES */
         .chart-container {
             background: white;
             border-radius: 25px;
             padding: 20px;
             margin-bottom: 25px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -172,7 +184,7 @@
             position: relative;
             width: 100%;
             max-width: 260px;
-            height: 260px; /* บังคับความสูงล็อกไว้เพื่อป้องกัน Safari ปรับย่อผิดพลาด */
+            height: 260px;
             margin: 0 auto;
             display: flex;
             justify-content: center;
@@ -203,13 +215,12 @@
             font-family: 'Prompt', sans-serif;
             font-size: 16px;
             outline: none;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            -webkit-appearance: none; /* ล้างสไตล์ของ iOS */
+            transition: var(--transition-smooth);
+            -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
         }
 
-        /* ใส่ลูกศรจำลองสำหรับ Select บน iOS/Safari หลังโดนล้างสไตล์ */
         select {
             background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%234a4e69' d='M0 0l5 5 5-5z'/></svg>");
             background-repeat: no-repeat;
@@ -218,13 +229,15 @@
             padding-right: 35px;
         }
 
+        /* เอฟเฟกต์ยกตัวขึ้นนุ่มๆ ตอนโฟกัสกดพิมพ์ */
         input:focus, select:focus {
             background: #fff;
-            box-shadow: 0 0 0 2px var(--primary);
+            box-shadow: 0 10px 20px rgba(168, 178, 255, 0.15), 0 0 0 2px var(--primary);
+            transform: translateY(-2px);
         }
 
         .auto-changed {
-            animation: highlightChange 0.5s ease;
+            animation: highlightChange 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         @keyframes highlightChange {
             0% { transform: scale(1); box-shadow: 0 0 0 0 var(--primary); }
@@ -253,12 +266,19 @@
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: var(--transition-snappy);
             -webkit-appearance: none;
             appearance: none;
         }
 
-        button:active { transform: scale(0.95); }
+        button:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        button:active { 
+            transform: scale(0.96) translateY(1px); 
+        }
 
         #cancel-btn {
             background: #cbd5e1;
@@ -277,23 +297,26 @@
 
         #month-filter {
             width: auto;
-            padding: 8px 30px 8px 12px; /* เผื่อที่ให้ลูกศร SVG */
+            padding: 8px 30px 8px 12px;
             font-size: 14px;
             border-radius: 12px;
             background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
             background-position: right 10px center;
+        }
+        #month-filter:focus {
+            transform: none;
         }
 
         .history-list {
             list-style: none;
             max-height: 280px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* เลื่อนรายชื่อลื่นไหลบน iOS Safari */
+            -webkit-overflow-scrolling: touch; /* สกรอลล์แบบมีแรงเฉื่อย ลื่นๆ บน iOS */
         }
 
         .history-list::-webkit-scrollbar { width: 5px; }
-        .history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .history-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
         .item {
             display: flex;
@@ -303,23 +326,31 @@
             background: white;
             border-radius: 20px;
             margin-bottom: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+            animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             font-size: 15px;
-            transition: all 0.3s ease;
+            transition: var(--transition-smooth);
+            will-change: transform, opacity;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.03);
         }
 
         .item.plus { border-left: 6px solid var(--income); }
         .item.minus { border-left: 6px solid var(--expense); }
 
+        /* อนิเมชันตอนกดลบรายการให้ยุบตัวนุ่มนวลที่สุด */
         .item.fade-out {
             opacity: 0;
-            transform: scale(0.9) translateY(-10px);
-            margin-bottom: -50px;
+            transform: scale(0.85) translateY(-15px);
             padding-top: 0;
             padding-bottom: 0;
             height: 0;
+            margin-bottom: 0;
             overflow: hidden;
+            pointer-events: none;
         }
 
         .item-details {
@@ -343,7 +374,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             width: auto;
             -webkit-appearance: none;
             appearance: none;
@@ -357,37 +388,43 @@
 
         .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
 
+        /* 👑 ปรับปรุง Toast ให้ใช้ GPU Transform ลื่นไหลไร้รอยต่อ 60FPS */
         .toast-container {
             position: fixed;
-            top: -100px;
+            top: 25px;
             left: 50%;
-            transform: translateX(-50%);
+            /* เริ่มต้นซ่อนไว้ข้างบน และใช้ transform แทนการเลื่อน top */
+            transform: translate(-50%, -150%);
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             padding: 14px 28px;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             gap: 10px;
             font-weight: 600;
             font-size: 15px;
             z-index: 9999;
-            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
             opacity: 0;
             pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            will-change: transform, opacity;
         }
 
-        .toast-container.show { top: 25px; opacity: 1; }
+        .toast-container.show { 
+            transform: translate(-50%, 0); 
+            opacity: 1; 
+        }
         .toast-success { border-left: 5px solid var(--income); color: #52793d; }
         .toast-info { border-left: 5px solid var(--primary); color: #5b65b3; }
         .toast-delete { border-left: 5px solid var(--expense); color: #c26753; }
         .toast-warning { border-left: 5px solid #ff5c5c; color: #b03a3a; }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         @media screen and (max-width: 480px) {
@@ -577,6 +614,11 @@
             const toastIcon = document.getElementById('toast-icon');
             
             toastText.innerText = text;
+            
+            // ล้างคลาสประเภทเก่าออกก่อนรันแอนิเมชันใหม่
+            toast.className = "toast-container";
+            void toast.offsetWidth; // บังคับสลับเฟรมวาดซ้ำเพื่อความลื่นไหล
+            
             toast.className = "toast-container show";
             
             if (type === 'success') {
@@ -638,7 +680,7 @@
         }
 
         // ==========================================
-        // 📊 ฟังก์ชันวาดกราฟวงกลม (เวอร์ชันเสถียรข้ามเบราว์เซอร์)
+        // 📊 ฟังก์ชันวาดกราฟวงกลมพร้อมระบบอนิเมชันสุดสมูท
         // ==========================================
         function renderExpenseChart(expenseList) {
             if (expenseList.length === 0) {
@@ -683,7 +725,7 @@
             if (expenseChart) {
                 expenseChart.data.labels = finalLabels;
                 expenseChart.data.datasets[0].data = finalData;
-                expenseChart.update();
+                expenseChart.update(); // อัปเดตข้อมูลเก่าแบบสมูท
             } else {
                 expenseChart = new Chart(ctx, {
                     type: 'pie',
@@ -698,10 +740,13 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, /* ปิดอัตราส่วนล็อกเดิมเพื่อจัดความสูงผ่าน CSS เองได้ */
-                        layout: {
-                            padding: 5
+                        maintainAspectRatio: false,
+                        // ✨ ปรับแต่ง Easing อนิเมชันของกราฟให้พรีเมียม
+                        animation: {
+                            duration: 800,
+                            easing: 'easeOutQuart'
                         },
+                        layout: { padding: 5 },
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -845,7 +890,7 @@
         async function deleteTransaction(id) {
             const itemElement = document.querySelector(`[data-id="${id}"]`);
             if (itemElement) {
-                itemElement.classList.add('fade-out');
+                itemElement.classList.add('fade-out'); // สั่งเล่นเอฟเฟกต์ GPU Collapse
                 setTimeout(async () => {
                     try {
                         await deleteDoc(doc(db, "transactions", id));
@@ -854,7 +899,7 @@
                     } catch (error) {
                         console.error("Error deleting document: ", error);
                     }
-                }, 300);
+                }, 300); // ทำลายข้อมูลหลังจบแอนิเมชันพอดี
             }
         }
 
