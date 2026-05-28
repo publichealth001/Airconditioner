@@ -95,10 +95,35 @@
             margin-bottom: 20px;
         }
 
-        h1 {
-            text-align: center;
-            font-size: 26px;
+        /* 🌟 APP HEADER & LOGOUT BUTTON */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            margin-bottom: 0;
+        }
+
+        .logout-btn {
+            background: #ffb4b4;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-snappy);
+            width: auto;
+        }
+
+        .logout-btn:hover {
+            background: #ff9999;
+            transform: translateY(-2px);
         }
 
         /* 👑 BALANCE CARD STYLES */
@@ -502,6 +527,7 @@
             #type, #method, #amount { width: 100%; }
             input, select, button { padding: 14px; font-size: 15px; }
             .item { padding: 14px; font-size: 14px; }
+            .app-header h1 { font-size: 20px; }
         }
     </style>
 </head>
@@ -526,7 +552,10 @@
     </div>
 
     <div class="container">
-        <h1>My Money Cloud 💸</h1>
+        <div class="app-header">
+            <h1>My Money Cloud 💸</h1>
+            <button id="btn-logout" class="logout-btn">ออกจากระบบ 🚪</button>
+        </div>
         
         <div class="balance-card">
             <div class="balance-title-main">สินทรัพย์รวมทั้งหมด 💰</div>
@@ -633,6 +662,7 @@
         const usernameInput = document.getElementById('username-input');
         const passwordInput = document.getElementById('password-input');
         const loginSubmitBtn = document.getElementById('login-submit-btn');
+        const btnLogout = document.getElementById('btn-logout'); // ปุ่ม Logout ใหม่
 
         // Main App Elements
         const form = document.getElementById('transaction-form');
@@ -670,31 +700,32 @@
             const loginTime = localStorage.getItem('mmc_login_time');
             if (loginTime) {
                 const now = Date.now();
-                const oneHour = 60 * 60 * 1000; // 1 ชั่วโมงในหน่วยมิลลิวินาที
+                const oneHour = 60 * 60 * 1000; 
                 
                 if (now - parseInt(loginTime) < oneHour) {
-                    // เซสชันยังไม่หมดอายุ -> ปลดล็อกหน้าจอ
                     loginModal.style.display = 'none';
                     mainContainer.style.display = 'block';
                     
-                    // ตั้งเวลาตัดการเชื่อมต่ออัตโนมัติตามเวลาที่เหลืออยู่
                     const remainingTime = oneHour - (now - parseInt(loginTime));
                     if(logoutTimeout) clearTimeout(logoutTimeout);
                     logoutTimeout = setTimeout(executeLogout, remainingTime);
                     return;
                 }
             }
-            // หากไม่มีข้อมูลหรือหมดอายุแล้ว -> บังคับล็อกเอาต์
-            executeLogout();
+            executeLogout(false);
         }
 
-        function executeLogout() {
+        function executeLogout(showNotification = true) {
             localStorage.removeItem('mmc_login_time');
             loginModal.style.display = 'flex';
             mainContainer.style.display = 'none';
             usernameInput.value = '';
             passwordInput.value = '';
             if(logoutTimeout) clearTimeout(logoutTimeout);
+            
+            if(showNotification) {
+                showToast("ออกจากระบบแล้วเพื่อความปลอดภัย 🛡️", "info");
+            }
         }
 
         loginSubmitBtn.addEventListener('click', function() {
@@ -707,12 +738,16 @@
                 mainContainer.style.display = 'block';
                 showToast("ยินดีต้อนรับเข้าสู่ระบบสำเร็จ! 🎉", "success");
                 
-                // ตั้งเวลาตัดเซสชันล่วงหน้า 1 ชั่วโมงเต็ม
                 if(logoutTimeout) clearTimeout(logoutTimeout);
                 logoutTimeout = setTimeout(executeLogout, 60 * 60 * 1000);
             } else {
                 showToast("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง! ❌", "warning");
             }
+        });
+
+        // Event Listener สำหรับปุ่ม Logout
+        btnLogout.addEventListener('click', function() {
+            executeLogout(true);
         });
 
         // รันตรวจสอบสิทธิ์ทันทีเมื่อโหลดหน้าเว็บ
@@ -791,7 +826,7 @@
             toast.className = "toast-container show";
             
             if (type === 'success') { toast.classList.add('toast-success'); toastIcon.innerText = '🎉'; } 
-            else if (type === 'info') { toast.classList.add('toast-info'); toastIcon.innerText = '🛠️'; } 
+            else if (type === 'info') { toast.classList.add('toast-info'); toastIcon.innerText = '🛡️'; } 
             else if (type === 'delete') { toast.classList.add('toast-delete'); toastIcon.innerText = '🗑️'; } 
             else if (type === 'warning') { toast.classList.add('toast-warning'); toastIcon.innerText = '⚠️'; }
 
