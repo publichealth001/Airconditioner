@@ -6,7 +6,6 @@
   <title>เครื่องคำนวณ ไทยช่วยไทย พลัส (60/40)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Sarabun', 'Segoe UI', sans-serif;
       background: #F0F4F8;
@@ -18,11 +17,7 @@
       color: #1A2332;
     }
 
-    /* ---- Header ---- */
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+    .header { text-align: center; margin-bottom: 1.75rem; }
     .header-badge {
       display: inline-block;
       background: #1B4F8A;
@@ -34,39 +29,28 @@
       border-radius: 20px;
       margin-bottom: 10px;
     }
-    .header h1 {
-      font-size: 26px;
-      font-weight: 700;
-      color: #1A2332;
-      line-height: 1.3;
-    }
-    .header p {
-      font-size: 14px;
-      color: #5A6A7A;
-      margin-top: 6px;
-    }
+    .header h1 { font-size: 24px; font-weight: 700; color: #1A2332; line-height: 1.3; }
+    .header p { font-size: 13px; color: #5A6A7A; margin-top: 5px; }
 
-    /* ---- Main card ---- */
     .card {
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      padding: 1.75rem;
+      padding: 1.5rem 1.75rem;
       width: 100%;
       max-width: 480px;
       margin-bottom: 1rem;
     }
 
     .section-label {
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
       color: #7A8A9A;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 10px;
     }
 
-    /* ---- Input ---- */
     .input-group {
       display: flex;
       align-items: center;
@@ -76,14 +60,8 @@
       padding: 0 14px;
       transition: border-color 0.2s;
     }
-    .input-group:focus-within {
-      border-color: #1B4F8A;
-    }
-    .input-prefix {
-      font-size: 18px;
-      color: #7A8A9A;
-      margin-right: 6px;
-    }
+    .input-group:focus-within { border-color: #1B4F8A; }
+    .input-prefix { font-size: 16px; color: #7A8A9A; margin-right: 6px; }
     .input-group input {
       flex: 1;
       border: none;
@@ -91,119 +69,128 @@
       font-size: 20px;
       font-weight: 600;
       color: #1A2332;
-      padding: 14px 0;
+      padding: 12px 0;
       outline: none;
       font-family: inherit;
     }
-    .input-suffix {
-      font-size: 14px;
-      color: #7A8A9A;
-    }
+    .input-suffix { font-size: 13px; color: #7A8A9A; }
+    .hint { font-size: 12px; color: #9AABBB; margin-top: 5px; }
 
-    .hint {
+    .divider { border: none; border-top: 1px solid #EDF2F7; margin: 1.25rem 0; }
+
+    /* Cap summary bar */
+    .cap-bar-wrap { margin-bottom: 1.25rem; }
+    .cap-bar-label {
+      display: flex;
+      justify-content: space-between;
       font-size: 12px;
-      color: #9AABBB;
-      margin-top: 6px;
+      color: #5A6A7A;
+      margin-bottom: 5px;
+    }
+    .cap-bar-label span:last-child { font-weight: 600; color: #1A2332; }
+    .cap-bar-track {
+      height: 8px;
+      background: #EDF2F7;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .cap-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.4s ease, background 0.3s;
     }
 
-    /* ---- Divider ---- */
-    .divider {
-      border: none;
-      border-top: 1px solid #EDF2F7;
-      margin: 1.25rem 0;
-    }
-
-    /* ---- Result boxes ---- */
+    /* Result main */
     .result-main {
       background: linear-gradient(135deg, #1B4F8A 0%, #1E6AA8 100%);
       border-radius: 12px;
       padding: 1.25rem 1.5rem;
       color: #fff;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .result-main .label {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 4px;
-    }
-    .result-main .amount {
-      font-size: 32px;
-      font-weight: 700;
-    }
-    .result-main .sub {
-      font-size: 12px;
-      opacity: 0.7;
-    }
+    .result-main .label { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+    .result-main .amount { font-size: 30px; font-weight: 700; }
+    .result-main .sub { font-size: 12px; opacity: 0.65; }
     .result-main .icon-circle {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
+      width: 50px; height: 50px; border-radius: 50%;
       background: rgba(255,255,255,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
     }
 
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .result-box {
-      border-radius: 12px;
-      padding: 1rem;
-    }
-    .result-box.gov {
-      background: #E8F5EE;
-    }
-    .result-box.self {
-      background: #FFF5E6;
-    }
-    .result-box .rb-label {
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
+    /* Result grid */
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .result-box { border-radius: 12px; padding: 1rem; }
+    .result-box.gov { background: #E8F5EE; }
+    .result-box.self { background: #FFF5E6; }
+    .result-box .rb-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
     .result-box.gov .rb-label { color: #1A6B3A; }
     .result-box.self .rb-label { color: #A05A00; }
-    .result-box .rb-amount {
-      font-size: 22px;
-      font-weight: 700;
-    }
+    .result-box .rb-amount { font-size: 20px; font-weight: 700; }
     .result-box.gov .rb-amount { color: #1A6B3A; }
     .result-box.self .rb-amount { color: #A05A00; }
-    .result-box .rb-pct {
-      font-size: 12px;
-      margin-top: 2px;
-    }
-    .result-box.gov .rb-pct { color: #4A9B6A; }
-    .result-box.self .rb-pct { color: #C07A20; }
+    .result-box .rb-sub { font-size: 11px; margin-top: 2px; }
+    .result-box.gov .rb-sub { color: #4A9B6A; }
+    .result-box.self .rb-sub { color: #C07A20; }
 
-    /* ---- Bar ---- */
-    .bar-wrap {
-      margin-top: 1.25rem;
+    /* Wallet breakdown */
+    .wallet-box {
+      background: #F5F8FC;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
     }
-    .bar-track {
-      height: 10px;
-      background: #EDF2F7;
-      border-radius: 6px;
-      overflow: hidden;
+    .wallet-row {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+    .wallet-row .wr-desc { color: #5A6A7A; }
+    .wallet-row .wr-val { font-weight: 600; color: #1A2332; }
+    .wallet-row.total {
+      border-top: 1px solid #D0DCE8;
+      margin-top: 6px;
+      padding-top: 8px;
+    }
+    .wallet-row.total .wr-desc { font-weight: 700; color: #1A2332; }
+    .wallet-row.total .wr-val { color: #1B4F8A; font-size: 15px; }
+    .wallet-row.extra .wr-val { color: #B45309; }
+
+    /* Warnings */
+    .warning {
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      display: none;
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .warning.show { display: block; }
+    .warning.day { background: #FFF3CD; border: 1px solid #FBBF24; color: #92400E; }
+    .warning.month { background: #FEE2E2; border: 1px solid #FCA5A5; color: #7F1D1D; }
+
+    /* Proportion bar */
+    .bar-wrap { margin-top: 0.75rem; }
+    .bar-track {
+      height: 8px; background: #EDF2F7;
+      border-radius: 6px; overflow: hidden; display: flex;
     }
     .bar-gov {
-      height: 100%;
-      background: #2E9E60;
+      height: 100%; background: #2E9E60;
       border-radius: 6px 0 0 6px;
       transition: width 0.4s ease;
     }
     .bar-self {
-      height: 100%;
-      background: #F5A623;
+      height: 100%; background: #F5A623;
+      transition: width 0.4s ease;
+    }
+    .bar-extra {
+      height: 100%; background: #EF4444;
       border-radius: 0 6px 6px 0;
       transition: width 0.4s ease;
     }
@@ -212,54 +199,10 @@
       justify-content: space-between;
       font-size: 11px;
       color: #9AABBB;
-      margin-top: 5px;
-    }
-
-    /* ---- Warning ---- */
-    .warning {
-      background: #FFF3CD;
-      border: 1px solid #FBBF24;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #92400E;
-      display: none;
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-    .warning.show { display: block; }
-
-    /* ---- Formula ---- */
-    .formula-box {
-      background: #F5F8FC;
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      margin-top: 1.25rem;
-    }
-    .formula-box .f-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #7A8A9A;
-      margin-bottom: 8px;
-    }
-    .formula-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      padding: 4px 0;
-    }
-    .formula-row .f-desc { color: #5A6A7A; }
-    .formula-row .f-val { font-weight: 600; color: #1A2332; }
-    .formula-row.total {
-      border-top: 1px solid #D0DCE8;
       margin-top: 4px;
-      padding-top: 8px;
     }
-    .formula-row.total .f-desc { font-weight: 600; color: #1A2332; }
-    .formula-row.total .f-val { color: #1B4F8A; font-size: 15px; }
 
-    /* ---- Reverse section ---- */
+    /* Reverse card */
     .reverse-card {
       background: #fff;
       border-radius: 16px;
@@ -269,186 +212,267 @@
       max-width: 480px;
       margin-bottom: 1rem;
     }
-    .reverse-card .rev-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1A2332;
+    .rev-title {
+      font-size: 14px; font-weight: 600; color: #1A2332;
       margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
-    .reverse-card .rev-title .rev-tag {
-      background: #EDF2F7;
-      color: #5A6A7A;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 20px;
+    .rev-tag {
+      background: #EDF2F7; color: #5A6A7A;
+      font-size: 11px; padding: 2px 8px; border-radius: 20px;
     }
-    .rev-result {
-      font-size: 15px;
-      color: #5A6A7A;
-      margin-top: 10px;
-    }
-    .rev-result span {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1B4F8A;
-    }
+    .rev-result { font-size: 14px; color: #5A6A7A; margin-top: 10px; line-height: 1.8; }
+    .rev-result span { font-size: 18px; font-weight: 700; color: #1B4F8A; }
 
-    /* ---- Footer ---- */
     .footer-note {
-      font-size: 12px;
-      color: #9AABBB;
-      text-align: center;
-      max-width: 480px;
-      line-height: 1.6;
+      font-size: 12px; color: #9AABBB;
+      text-align: center; max-width: 480px; line-height: 1.7;
     }
 
     @media (max-width: 400px) {
-      .result-main .amount { font-size: 26px; }
+      .result-main .amount { font-size: 24px; }
       .result-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="header-badge">มาตรการกระตุ้นเศรษฐกิจ</div>
-    <h1>ไทยช่วยไทย พลัส<br>เครื่องคำนวณยอดเงิน</h1>
-    <p>โครงการ 60/40 — รัฐช่วย 60% · ประชาชนจ่าย 40%</p>
+<div class="header">
+  <div class="header-badge">มาตรการกระตุ้นเศรษฐกิจ</div>
+  <h1>ไทยช่วยไทย พลัส<br>เครื่องคำนวณยอดเงิน</h1>
+  <p>โครงการ 60/40 · รัฐช่วยสูงสุด 200 บาท/วัน และ 1,000 บาท/เดือน</p>
+</div>
+
+<!-- ส่วนที่ 1: Input -->
+<div class="card">
+  <div class="section-label">ขั้นที่ 1 — เงินที่คุณมีในกระเป๋าตัง (ส่วน 40%)</div>
+  <div class="input-group">
+    <span class="input-prefix">฿</span>
+    <input type="number" id="myMoney" value="64.40" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
+    <span class="input-suffix">บาท</span>
+  </div>
+  <p class="hint">กรอกเงินสดที่คุณพร้อมจ่าย (ส่วน 40% ของยอดรวม)</p>
+
+  <hr class="divider" />
+
+  <div class="section-label">ขั้นที่ 2 — รัฐช่วยไปแล้ววันนี้ (ถ้ามี)</div>
+  <div class="cap-bar-wrap">
+    <div class="cap-bar-label">
+      <span>วงเงินรัฐที่ใช้ไปแล้ววันนี้</span>
+      <span id="capUsedLabel">฿0.00 / ฿200.00</span>
+    </div>
+    <div class="cap-bar-track">
+      <div class="cap-bar-fill" id="capBarFill" style="width:0%; background:#2E9E60;"></div>
+    </div>
+  </div>
+  <div class="input-group">
+    <span class="input-prefix">฿</span>
+    <input type="number" id="capUsed" value="0" min="0" max="200" step="0.01" placeholder="0.00" oninput="calculate()" />
+    <span class="input-suffix">บาท</span>
+  </div>
+  <p class="hint">ถ้ายังไม่ได้ใช้เลยวันนี้ ใส่ 0</p>
+
+  <hr class="divider" />
+
+  <!-- Warnings -->
+  <div class="warning day" id="warnDay">
+    ⚠️ <strong>รัฐถึงเพดานรายวันแล้ว</strong> — วงเงินรัฐวันนี้เต็ม 200 บาทแล้ว
+    ส่วนที่รัฐช่วยไม่ได้ (<span id="overDay"></span> บาท) คุณต้องจ่ายเพิ่มเองจากกระเป๋า
+  </div>
+  <div class="warning month" id="warnMonth">
+    🚫 <strong>รัฐถึงเพดานรายเดือนแล้ว</strong> — วงเงินรัฐเดือนนี้ครบ 1,000 บาทแล้ว
+    ส่วนที่เกิน (<span id="overMonth"></span> บาท) คุณต้องจ่ายทั้งหมดเอง
   </div>
 
-  <!-- Main Calculator -->
-  <div class="card">
-    <div class="section-label">เงินที่คุณมี (ส่วนประชาชน 40%)</div>
-    <div class="input-group">
-      <span class="input-prefix">฿</span>
-      <input type="number" id="myMoney" value="64.40" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
-      <span class="input-suffix">บาท</span>
+  <!-- ยอดร้านรับ -->
+  <div class="result-main">
+    <div>
+      <div class="label">ยอดที่ร้านต้องกดรับในระบบ</div>
+      <div class="amount" id="shopTotal">฿161.00</div>
+      <div class="sub">ยอดรวม 100% (รัฐ + คุณ)</div>
     </div>
-    <p class="hint">กรอกจำนวนเงินที่คุณต้องการใช้จ่าย</p>
+    <div class="icon-circle">🏪</div>
+  </div>
 
-    <hr class="divider" />
-
-    <!-- ยอดร้านรับ -->
-    <div class="result-main">
-      <div>
-        <div class="label">ยอดที่ร้านต้องกดรับในระบบ</div>
-        <div class="amount" id="shopTotal">฿161.00</div>
-        <div class="sub">ยอดรวม 100%</div>
-      </div>
-      <div class="icon-circle">🏪</div>
+  <!-- รัฐ + ตัวเอง -->
+  <div class="result-grid">
+    <div class="result-box gov">
+      <div class="rb-label">🏛 รัฐช่วยจ่ายจริง</div>
+      <div class="rb-amount" id="govActual">฿96.60</div>
+      <div class="rb-sub" id="govSub">60% · ไม่เกิน cap</div>
     </div>
-
-    <!-- Gov + Self -->
-    <div class="result-grid">
-      <div class="result-box gov">
-        <div class="rb-label">🏛 รัฐช่วยจ่าย</div>
-        <div class="rb-amount" id="govPay">฿96.60</div>
-        <div class="rb-pct">60% ของยอดรวม</div>
-      </div>
-      <div class="result-box self">
-        <div class="rb-label">👤 คุณจ่ายเอง</div>
-        <div class="rb-amount" id="selfPay">฿64.40</div>
-        <div class="rb-pct">40% ของยอดรวม</div>
-      </div>
-    </div>
-
-    <!-- Bar -->
-    <div class="bar-wrap">
-      <div class="bar-track">
-        <div class="bar-gov" id="barGov" style="width:60%"></div>
-        <div class="bar-self" id="barSelf" style="width:40%"></div>
-      </div>
-      <div class="bar-labels">
-        <span>รัฐ 60%</span>
-        <span>คุณ 40%</span>
-      </div>
-    </div>
-
-    <!-- Warning -->
-    <div class="warning" id="capWarn">
-      ⚠️ <strong>เกินเพดานสนับสนุน</strong> — ส่วนรัฐเกิน 1,000 บาท/คน/เดือน
-      คุณต้องจ่ายส่วนเกิน (<span id="overAmount"></span> บาท) เพิ่มเติมเอง
-    </div>
-
-    <!-- Formula -->
-    <div class="formula-box">
-      <div class="f-title">รายละเอียดการคำนวณ</div>
-      <div class="formula-row">
-        <span class="f-desc">เงินของคุณ ÷ 0.40 = ยอดร้านรับ</span>
-        <span class="f-val" id="f1">฿161.00</span>
-      </div>
-      <div class="formula-row">
-        <span class="f-desc">ยอดร้านรับ × 60% = รัฐช่วย</span>
-        <span class="f-val" id="f2">฿96.60</span>
-      </div>
-      <div class="formula-row total">
-        <span class="f-desc">ยอดร้านกดรับรวม</span>
-        <span class="f-val" id="f3">฿161.00</span>
-      </div>
+    <div class="result-box self">
+      <div class="rb-label">👤 คุณจ่ายรวม</div>
+      <div class="rb-amount" id="selfTotal">฿64.40</div>
+      <div class="rb-sub" id="selfSub">40% ของยอดรวม</div>
     </div>
   </div>
 
-  <!-- Reverse Calculator -->
-  <div class="reverse-card">
-    <div class="rev-title">
-      คำนวณย้อนกลับ
-      <span class="rev-tag">รู้ยอดร้านรับ → หาว่าต้องจ่ายเท่าไหร่</span>
+  <!-- Wallet breakdown -->
+  <div class="wallet-box" id="walletBox">
+    <div class="wallet-row">
+      <span class="wr-desc">เงินกระเป๋าตังที่ใช้ (40%)</span>
+      <span class="wr-val" id="w40">฿64.40</span>
     </div>
-    <div class="input-group">
-      <span class="input-prefix">฿</span>
-      <input type="number" id="shopInput" min="0" step="0.01" placeholder="กรอกยอดที่ร้านกดรับ" oninput="calcReverse()" />
-      <span class="input-suffix">บาท</span>
+    <div class="wallet-row extra" id="extraRow" style="display:none;">
+      <span class="wr-desc">⚠️ จ่ายเพิ่มเองเพราะรัฐถึง cap</span>
+      <span class="wr-val" id="wExtra">฿0.00</span>
     </div>
-    <div class="rev-result">คุณต้องจ่ายเอง: <span id="reverseOut">—</span></div>
+    <div class="wallet-row total">
+      <span class="wr-desc">รวมเงินที่ออกจากกระเป๋าคุณ</span>
+      <span class="wr-val" id="wTotal">฿64.40</span>
+    </div>
   </div>
 
-  <p class="footer-note">
-    * ร้านค้ากด "รับยอด" ในระบบเท่ากับ ยอดเต็ม 100%<br>
-    รัฐโอนส่วน 60% ให้ร้านภายหลังผ่านระบบ · สูงสุดไม่เกิน 1,000 บาท/คน/เดือน
-  </p>
+  <!-- Bar -->
+  <div class="bar-wrap">
+    <div class="bar-track">
+      <div class="bar-gov" id="barGov" style="width:60%"></div>
+      <div class="bar-self" id="barSelf" style="width:40%"></div>
+      <div class="bar-extra" id="barExtra" style="width:0%"></div>
+    </div>
+    <div class="bar-labels">
+      <span>🟢 รัฐจ่าย</span>
+      <span>🟡 คุณจ่าย (40%)</span>
+      <span>🔴 จ่ายเพิ่ม</span>
+    </div>
+  </div>
+</div>
 
-  <script>
-    function fmt(n) {
-      return '฿' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+<!-- ส่วนคำนวณย้อนกลับ -->
+<div class="reverse-card">
+  <div class="rev-title">
+    คำนวณย้อนกลับ
+    <span class="rev-tag">รู้ยอดร้านรับ → หาว่าต้องจ่ายเท่าไหร่</span>
+  </div>
+  <div class="input-group">
+    <span class="input-prefix">฿</span>
+    <input type="number" id="shopInput" min="0" step="0.01" placeholder="กรอกยอดที่ร้านกดรับ" oninput="calcReverse()" />
+    <span class="input-suffix">บาท</span>
+  </div>
+  <div class="rev-result" id="reverseOut">คุณต้องจ่ายเอง (40%): <span>—</span></div>
+</div>
+
+<p class="footer-note">
+  * ร้านค้ากด "รับยอด" ในระบบเท่ากับ ยอดเต็ม 100%<br>
+  รัฐโอนส่วนของรัฐให้ร้านภายหลัง<br>
+  เพดานรัฐสนับสนุน: สูงสุด <strong>200 บาท/วัน</strong> และ <strong>1,000 บาท/คน/เดือน</strong>
+</p>
+
+<script>
+  const DAY_CAP = 200;
+  const MONTH_CAP = 1000;
+
+  function fmt(n) {
+    return '฿' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function calculate() {
+    const myMoney = parseFloat(document.getElementById('myMoney').value) || 0;
+    const capUsed = Math.min(parseFloat(document.getElementById('capUsed').value) || 0, DAY_CAP);
+
+    // ยอดรวมจากสัดส่วน 60/40: เงินเรา = 40% → ยอดรวม = เงินเรา / 0.4
+    const shopTotal = myMoney / 0.40;
+    const govRaw = shopTotal * 0.60; // ส่วนรัฐตามสัดส่วน 60%
+
+    // วงเงินรัฐที่เหลือวันนี้
+    const dayRemain = Math.max(DAY_CAP - capUsed, 0);
+
+    // รัฐช่วยจริง = min(สัดส่วน60%, เหลือวันนี้, 1000/เดือน) — เดือนไม่รู้ยอดที่ใช้ไปแล้ว จึงใช้ dayRemain เป็นหลัก
+    const govActual = Math.min(govRaw, dayRemain);
+
+    // ส่วนที่รัฐช่วยไม่ได้ (เพราะถึง cap วัน)
+    const govShortfall = govRaw - govActual;
+
+    // คุณต้องจ่ายจริง = ส่วน40% + ส่วนที่รัฐขาด
+    const selfPay40 = myMoney;         // ส่วน 40% ตามปกติ
+    const selfExtra = govShortfall;    // จ่ายเพิ่มเพราะรัฐถึง cap
+    const selfTotal = selfPay40 + selfExtra;
+
+    // Update cap bar
+    const capPct = Math.min((capUsed / DAY_CAP) * 100, 100);
+    document.getElementById('capBarFill').style.width = capPct + '%';
+    document.getElementById('capBarFill').style.background =
+      capPct >= 100 ? '#EF4444' : capPct >= 70 ? '#F5A623' : '#2E9E60';
+    document.getElementById('capUsedLabel').textContent =
+      fmt(capUsed) + ' / ' + fmt(DAY_CAP);
+
+    // Update results
+    document.getElementById('shopTotal').textContent = fmt(shopTotal);
+    document.getElementById('govActual').textContent = fmt(govActual);
+    document.getElementById('selfTotal').textContent = fmt(selfTotal);
+
+    // Gov sub label
+    const govPct60 = shopTotal > 0 ? ((govActual / shopTotal) * 100).toFixed(1) : '0.0';
+    document.getElementById('govSub').textContent =
+      govShortfall > 0
+        ? 'ถูกจำกัดที่ cap วันนี้'
+        : '60% ของยอดรวม';
+
+    // Self sub label
+    document.getElementById('selfSub').textContent =
+      selfExtra > 0
+        ? '40% + จ่ายเพิ่ม ' + fmt(selfExtra)
+        : '40% ของยอดรวม';
+
+    // Wallet breakdown
+    document.getElementById('w40').textContent = fmt(selfPay40);
+    document.getElementById('wExtra').textContent = fmt(selfExtra);
+    document.getElementById('wTotal').textContent = fmt(selfTotal);
+    document.getElementById('extraRow').style.display = selfExtra > 0 ? 'flex' : 'none';
+
+    // Bar proportions
+    const total = shopTotal > 0 ? shopTotal : 1;
+    document.getElementById('barGov').style.width = ((govActual / total) * 100).toFixed(1) + '%';
+    document.getElementById('barSelf').style.width = ((selfPay40 / total) * 100).toFixed(1) + '%';
+    document.getElementById('barExtra').style.width = ((selfExtra / total) * 100).toFixed(1) + '%';
+
+    // Warnings
+    const wDay = document.getElementById('warnDay');
+    const wMonth = document.getElementById('warnMonth');
+
+    if (govShortfall > 0.005 && dayRemain <= 0) {
+      document.getElementById('overDay').textContent = govShortfall.toFixed(2);
+      wDay.classList.add('show');
+    } else {
+      wDay.classList.remove('show');
     }
 
-    function calculate() {
-      const my = parseFloat(document.getElementById('myMoney').value) || 0;
-      const total = my / 0.40;
-      const gov = total * 0.60;
-
-      document.getElementById('shopTotal').textContent = fmt(total);
-      document.getElementById('govPay').textContent = fmt(gov);
-      document.getElementById('selfPay').textContent = fmt(my);
-      document.getElementById('f1').textContent = fmt(total);
-      document.getElementById('f2').textContent = fmt(gov);
-      document.getElementById('f3').textContent = fmt(total);
-
-      const govPct = total > 0 ? 60 : 0;
-      const selfPct = total > 0 ? 40 : 0;
-      document.getElementById('barGov').style.width = govPct + '%';
-      document.getElementById('barSelf').style.width = selfPct + '%';
-
-      const warn = document.getElementById('capWarn');
-      if (gov > 1000 && total > 0) {
-        const over = (gov - 1000).toFixed(2);
-        document.getElementById('overAmount').textContent = over;
-        warn.classList.add('show');
-      } else {
-        warn.classList.remove('show');
-      }
+    // Monthly: ถ้า govRaw > 1000 (ต้องให้ user ใส่ cap เดือนด้วยในอนาคต — ตอนนี้แจ้งเตือนถ้า govRaw > 1000)
+    if (govRaw > MONTH_CAP) {
+      document.getElementById('overMonth').textContent = (govRaw - MONTH_CAP).toFixed(2);
+      wMonth.classList.add('show');
+    } else {
+      wMonth.classList.remove('show');
     }
+  }
 
-    function calcReverse() {
-      const shop = parseFloat(document.getElementById('shopInput').value) || 0;
-      const self = shop * 0.40;
-      document.getElementById('reverseOut').textContent = shop ? fmt(self) : '—';
+  function calcReverse() {
+    const shop = parseFloat(document.getElementById('shopInput').value) || 0;
+    const self40 = shop * 0.40;
+    const gov60 = shop * 0.60;
+    const capUsed = Math.min(parseFloat(document.getElementById('capUsed').value) || 0, DAY_CAP);
+    const dayRemain = Math.max(DAY_CAP - capUsed, 0);
+    const govActual = Math.min(gov60, dayRemain);
+    const extra = gov60 - govActual;
+    const totalSelf = self40 + extra;
+
+    const el = document.getElementById('reverseOut');
+    if (!shop) {
+      el.innerHTML = 'คุณต้องจ่ายเอง (40%): <span>—</span>';
+      return;
     }
+    if (extra > 0.005) {
+      el.innerHTML =
+        'คุณต้องจ่ายเอง (40%): <span>' + fmt(self40) + '</span><br>' +
+        'จ่ายเพิ่มเพราะรัฐถึง cap: <span style="color:#B45309">' + fmt(extra) + '</span><br>' +
+        'รวมออกจากกระเป๋าคุณ: <span>' + fmt(totalSelf) + '</span>';
+    } else {
+      el.innerHTML = 'คุณต้องจ่ายเอง (40%): <span>' + fmt(self40) + '</span>';
+    }
+  }
 
-    calculate();
-  </script>
+  calculate();
+</script>
 </body>
 </html>
