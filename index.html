@@ -1,1074 +1,454 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Money Cloud 💖</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* CSS: ดีไซน์พาสเทลพรีเมียม และเร่งประสิทธิภาพความลื่นไหลด้วย GPU */
-        :root {
-            --bg-color: #f7f9fc;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --primary: #a8b2ff;
-            --income: #b5e48c;
-            --expense: #ffb4a2;
-            --transfer-move: #9fd3c7;
-            --text-dark: #4a4e69;
-            --delete-btn: #ffb4b4;
-            --edit-btn: #ffd166;
-            --warning: #ffcb77;
-            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --transition-snappy: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เครื่องคำนวณ ไทยช่วยไทย พลัส (60/40)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent; 
-        }
+    body {
+      font-family: 'Sarabun', 'Segoe UI', sans-serif;
+      background: #F0F4F8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 3rem;
+      color: #1A2332;
+    }
 
-        body {
-            font-family: 'Prompt', sans-serif;
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            background-attachment: fixed;
-            color: var(--text-dark);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-        }
+    /* ---- Header ---- */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header-badge {
+      display: inline-block;
+      background: #1B4F8A;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1A2332;
+      line-height: 1.3;
+    }
+    .header p {
+      font-size: 14px;
+      color: #5A6A7A;
+      margin-top: 6px;
+    }
 
-        /* 🔐 LOGIN MODAL STYLES */
-        .login-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 10000;
-            padding: 20px;
-            transition: var(--transition-smooth);
-        }
+    /* ---- Main card ---- */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 1rem;
+    }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 40px 30px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-            animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #7A8A9A;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
 
-        .login-card h2 {
-            font-size: 20px;
-            margin-bottom: 25px;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
+    /* ---- Input ---- */
+    .input-group {
+      display: flex;
+      align-items: center;
+      background: #F5F8FC;
+      border: 1.5px solid #D0DCE8;
+      border-radius: 10px;
+      padding: 0 14px;
+      transition: border-color 0.2s;
+    }
+    .input-group:focus-within {
+      border-color: #1B4F8A;
+    }
+    .input-prefix {
+      font-size: 18px;
+      color: #7A8A9A;
+      margin-right: 6px;
+    }
+    .input-group input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1A2332;
+      padding: 14px 0;
+      outline: none;
+      font-family: inherit;
+    }
+    .input-suffix {
+      font-size: 14px;
+      color: #7A8A9A;
+    }
 
-        .login-group {
-            margin-bottom: 15px;
-        }
+    .hint {
+      font-size: 12px;
+      color: #9AABBB;
+      margin-top: 6px;
+    }
 
-        /* CONTAINER (ซ่อนไว้เป็นค่าเริ่มต้นจนกว่าจะผ่านการเข้าสู่ระบบ) */
-        .container {
-            display: none;
-            width: 100%;
-            max-width: 420px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 35px;
-            padding: 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
+    /* ---- Divider ---- */
+    .divider {
+      border: none;
+      border-top: 1px solid #EDF2F7;
+      margin: 1.25rem 0;
+    }
 
-        /* 🌟 APP HEADER & LOGOUT BUTTON */
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+    /* ---- Result boxes ---- */
+    .result-main {
+      background: linear-gradient(135deg, #1B4F8A 0%, #1E6AA8 100%);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .result-main .label {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    .result-main .amount {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    .result-main .sub {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    .result-main .icon-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
 
-        .app-header h1 {
-            font-size: 22px;
-            margin-bottom: 0;
-        }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .result-box {
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .result-box.gov {
+      background: #E8F5EE;
+    }
+    .result-box.self {
+      background: #FFF5E6;
+    }
+    .result-box .rb-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .result-box.gov .rb-label { color: #1A6B3A; }
+    .result-box.self .rb-label { color: #A05A00; }
+    .result-box .rb-amount {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .result-box.gov .rb-amount { color: #1A6B3A; }
+    .result-box.self .rb-amount { color: #A05A00; }
+    .result-box .rb-pct {
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .result-box.gov .rb-pct { color: #4A9B6A; }
+    .result-box.self .rb-pct { color: #C07A20; }
 
-        .logout-btn {
-            background: #ffb4b4;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-snappy);
-            width: auto;
-        }
+    /* ---- Bar ---- */
+    .bar-wrap {
+      margin-top: 1.25rem;
+    }
+    .bar-track {
+      height: 10px;
+      background: #EDF2F7;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+    .bar-gov {
+      height: 100%;
+      background: #2E9E60;
+      border-radius: 6px 0 0 6px;
+      transition: width 0.4s ease;
+    }
+    .bar-self {
+      height: 100%;
+      background: #F5A623;
+      border-radius: 0 6px 6px 0;
+      transition: width 0.4s ease;
+    }
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #9AABBB;
+      margin-top: 5px;
+    }
 
-        .logout-btn:hover {
-            background: #ff9999;
-            transform: translateY(-2px);
-        }
+    /* ---- Warning ---- */
+    .warning {
+      background: #FFF3CD;
+      border: 1px solid #FBBF24;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #92400E;
+      display: none;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    .warning.show { display: block; }
 
-        /* 👑 BALANCE CARD STYLES */
-        .balance-card {
-            background: linear-gradient(135deg, #fff 0%, #f5f7fa 100%);
-            border-radius: 25px;
-            padding: 22px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
-            margin-bottom: 15px;
-        }
+    /* ---- Formula ---- */
+    .formula-box {
+      background: #F5F8FC;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1.25rem;
+    }
+    .formula-box .f-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #7A8A9A;
+      margin-bottom: 8px;
+    }
+    .formula-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+    .formula-row .f-desc { color: #5A6A7A; }
+    .formula-row .f-val { font-weight: 600; color: #1A2332; }
+    .formula-row.total {
+      border-top: 1px solid #D0DCE8;
+      margin-top: 4px;
+      padding-top: 8px;
+    }
+    .formula-row.total .f-desc { font-weight: 600; color: #1A2332; }
+    .formula-row.total .f-val { color: #1B4F8A; font-size: 15px; }
 
-        .balance-title-main {
-            font-size: 14px;
-            color: #7a7f9a;
-            text-align: center;
-            margin-bottom: 2px;
-        }
+    /* ---- Reverse section ---- */
+    .reverse-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 1.5rem 1.75rem;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 1rem;
+    }
+    .reverse-card .rev-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1A2332;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reverse-card .rev-title .rev-tag {
+      background: #EDF2F7;
+      color: #5A6A7A;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .rev-result {
+      font-size: 15px;
+      color: #5A6A7A;
+      margin-top: 10px;
+    }
+    .rev-result span {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1B4F8A;
+    }
 
-        .balance-amount {
-            font-size: 34px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 12px;
-            color: #4a4e69;
-        }
+    /* ---- Footer ---- */
+    .footer-note {
+      font-size: 12px;
+      color: #9AABBB;
+      text-align: center;
+      max-width: 480px;
+      line-height: 1.6;
+    }
 
-        .balance-breakdown {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            border-top: 1px dashed #e2e8f0;
-            padding-top: 12px;
-            font-size: 13px;
-        }
-
-        .breakdown-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* ⚠️ BUDGET CARD STYLES */
-        .budget-card {
-            background: white;
-            border-radius: 22px;
-            padding: 18px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.02);
-        }
-
-        .budget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .budget-input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #f0f2f5;
-            padding: 4px 10px;
-            border-radius: 12px;
-            max-width: 140px;
-            transition: var(--transition-snappy);
-        }
-
-        .budget-input-wrapper:focus-within {
-            background: #fff;
-            box-shadow: 0 0 0 2px var(--primary);
-        }
-
-        .budget-input-wrapper span {
-            font-size: 13px;
-            color: #888;
-        }
-
-        #budget-limit {
-            width: 100%;
-            padding: 2px;
-            background: transparent;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: 'Prompt', sans-serif;
-            border: none;
-            color: var(--text-dark);
-            outline: none;
-            text-align: right;
-            -webkit-appearance: none;
-            border-radius: 0;
-        }
-
-        .progress-container {
-            width: 100%;
-            height: 12px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--income);
-            border-radius: 10px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
-            will-change: width;
-        }
-
-        .budget-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #7a7f9a;
-        }
-
-        /* 📊 CHART CONTAINER STYLES */
-        .chart-container {
-            background: white;
-            border-radius: 25px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .chart-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            align-self: flex-start;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 260px;
-            height: 260px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #expenseChart {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .form-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        #type { flex: 1; }
-        #method { flex: 1; }
-
-        input, select {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 18px;
-            background: #f0f2f5;
-            font-family: 'Prompt', sans-serif;
-            font-size: 16px;
-            outline: none;
-            transition: var(--transition-smooth);
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
-
-        select {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%234a4e69' d='M0 0l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            background-size: 10px 6px;
-            padding-right: 35px;
-        }
-
-        input:focus, select:focus {
-            background: #fff;
-            box-shadow: 0 10px 20px rgba(168, 178, 255, 0.15), 0 0 0 2px var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .auto-changed {
-            animation: highlightChange 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        @keyframes highlightChange {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 var(--primary); }
-            50% { transform: scale(1.02); box-shadow: 0 0 0 4px var(--primary); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 var(--primary); }
-        }
-
-        #note {
-            margin-bottom: 20px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 18px;
-            background: var(--primary);
-            color: white;
-            font-family: 'Prompt', sans-serif;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-snappy);
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        button:hover {
-            opacity: 0.95;
-            transform: translateY(-1px);
-        }
-
-        button:active { 
-            transform: scale(0.96) translateY(1px); 
-        }
-
-        #cancel-btn {
-            background: #cbd5e1;
-            color: #64748b;
-            display: none;
-        }
-
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        h3 { font-size: 18px; }
-
-        #month-filter {
-            width: auto;
-            padding: 8px 30px 8px 12px;
-            font-size: 14px;
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            background-position: right 10px center;
-        }
-        #month-filter:focus {
-            transform: none;
-        }
-
-        .history-list {
-            list-style: none;
-            max-height: 280px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch; 
-        }
-
-        .history-list::-webkit-scrollbar { width: 5px; }
-        .history-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            background: white;
-            border-radius: 20px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
-            animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-size: 15px;
-            transition: var(--transition-smooth);
-            will-change: transform, opacity;
-        }
-
-        .item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.03);
-        }
-
-        .item.plus { border-left: 6px solid var(--income); }
-        .item.minus { border-left: 6px solid var(--expense); }
-        .item.move { border-left: 6px solid var(--transfer-move); }
-
-        .item.fade-out {
-            opacity: 0;
-            transform: scale(0.85) translateY(-15px);
-            padding-top: 0;
-            padding-bottom: 0;
-            height: 0;
-            margin-bottom: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .item-details {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            padding-right: 10px;
-        }
-
-        .item-note { word-break: break-word; font-weight: 400; display: flex; align-items: center; flex-wrap: wrap; }
-        
-        .method-tag {
-            font-size: 11px;
-            background: #f0f2f5;
-            padding: 2px 6px;
-            border-radius: 6px;
-            color: #7a7f9a;
-            margin-left: 6px;
-            font-weight: normal;
-            display: inline-block;
-        }
-
-        .item-date { font-size: 11px; color: #a0a5ba; margin-top: 2px; }
-        .item-right { display: flex; align-items: center; gap: 8px; }
-        .item-amount { font-weight: 600; white-space: nowrap; margin-right: 4px; }
-
-        .action-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 6px;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            width: auto;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        .action-btn:active { transform: scale(0.8); }
-        .delete-btn-icon { color: var(--delete-btn); }
-        .delete-btn-icon:hover { color: #ff5c5c; }
-        .edit-btn-icon { color: #cbd5e1; }
-        .edit-btn-icon:hover { color: #94a3b8; }
-
-        .no-data { text-align: center; color: #a0a5ba; padding: 20px; font-size: 14px; }
-
-        .toast-container {
-            position: fixed;
-            top: 25px;
-            left: 50%;
-            transform: translate(-50%, -150%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 14px 28px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 15px;
-            z-index: 99999;
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
-            will-change: transform, opacity;
-        }
-
-        .toast-container.show { 
-            transform: translate(-50%, 0); 
-            opacity: 1; 
-        }
-        .toast-success { border-left: 5px solid var(--income); color: #52793d; }
-        .toast-info { border-left: 5px solid var(--primary); color: #5b65b3; }
-        .toast-delete { border-left: 5px solid var(--expense); color: #c26753; }
-        .toast-warning { border-left: 5px solid #ff5c5c; color: #b03a3a; }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: scale(0.96) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        @media screen and (max-width: 480px) {
-            .container { padding: 25px 20px; border-radius: 30px; }
-            .balance-amount { font-size: 28px; }
-            .form-group { flex-direction: column; gap: 10px; }
-            #type, #method, #amount { width: 100%; }
-            input, select, button { padding: 14px; font-size: 15px; }
-            .item { padding: 14px; font-size: 14px; }
-            .app-header h1 { font-size: 20px; }
-        }
-    </style>
+    @media (max-width: 400px) {
+      .result-main .amount { font-size: 26px; }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-    <div id="login-modal" class="login-overlay">
-        <div class="login-card">
-            <h2>🔐 ยืนยันตัวตน My Money Cloud</h2>
-            <div class="login-group">
-                <input type="text" id="username-input" placeholder="ชื่อผู้ใช้งาน (Username)" autocomplete="off">
-            </div>
-            <div class="login-group">
-                <input type="password" id="password-input" placeholder="รหัสผ่าน (Password)">
-            </div>
-            <button id="login-submit-btn">เข้าสู่ระบบ 🚀</button>
-        </div>
+  <div class="header">
+    <div class="header-badge">มาตรการกระตุ้นเศรษฐกิจ</div>
+    <h1>ไทยช่วยไทย พลัส<br>เครื่องคำนวณยอดเงิน</h1>
+    <p>โครงการ 60/40 — รัฐช่วย 60% · ประชาชนจ่าย 40%</p>
+  </div>
+
+  <!-- Main Calculator -->
+  <div class="card">
+    <div class="section-label">เงินที่คุณมี (ส่วนประชาชน 40%)</div>
+    <div class="input-group">
+      <span class="input-prefix">฿</span>
+      <input type="number" id="myMoney" value="64.40" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
+      <span class="input-suffix">บาท</span>
+    </div>
+    <p class="hint">กรอกจำนวนเงินที่คุณต้องการใช้จ่าย</p>
+
+    <hr class="divider" />
+
+    <!-- ยอดร้านรับ -->
+    <div class="result-main">
+      <div>
+        <div class="label">ยอดที่ร้านต้องกดรับในระบบ</div>
+        <div class="amount" id="shopTotal">฿161.00</div>
+        <div class="sub">ยอดรวม 100%</div>
+      </div>
+      <div class="icon-circle">🏪</div>
     </div>
 
-    <div id="toast" class="toast-container">
-        <span id="toast-icon">✨</span>
-        <span id="toast-text">ทำรายการสำเร็จ!</span>
+    <!-- Gov + Self -->
+    <div class="result-grid">
+      <div class="result-box gov">
+        <div class="rb-label">🏛 รัฐช่วยจ่าย</div>
+        <div class="rb-amount" id="govPay">฿96.60</div>
+        <div class="rb-pct">60% ของยอดรวม</div>
+      </div>
+      <div class="result-box self">
+        <div class="rb-label">👤 คุณจ่ายเอง</div>
+        <div class="rb-amount" id="selfPay">฿64.40</div>
+        <div class="rb-pct">40% ของยอดรวม</div>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="app-header">
-            <h1>My Money Cloud 💸</h1>
-            <button id="btn-logout" class="logout-btn">ออกจากระบบ 🚪</button>
-        </div>
-        
-        <div class="balance-card">
-            <div class="balance-title-main">สินทรัพย์รวมทั้งหมด 💰</div>
-            <div class="balance-amount" id="grand-total">฿0.00</div>
-            
-            <div class="balance-breakdown">
-                <div class="breakdown-row">
-                    <span style="color: #7a7f9a;">เงินสดในระบบ 💵:</span>
-                    <span id="cash-balance" style="font-weight: 600;">฿0.00</span>
-                </div>
-                <div class="breakdown-row">
-                    <span style="color: #7a7f9a;">เงินในบัญชีธนาคาร 🏦:</span>
-                    <span id="bank-current-balance" style="font-weight: 600; color: #4e73df;">฿0.00</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="budget-card">
-            <div class="budget-header">
-                <span>งบประมาณเดือนนี้ 🎯</span>
-                <div class="budget-input-wrapper">
-                    <span>฿</span>
-                    <input type="number" id="budget-limit" min="0" value="5000" placeholder="ตั้งงบ">
-                </div>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="budget-progress"></div>
-            </div>
-            <div class="budget-stats">
-                <span id="budget-used">ใช้ไป: ฿0.00</span>
-                <span id="budget-percent">0%</span>
-            </div>
-        </div>
-
-        <div class="chart-container" id="chart-section" style="display: none;">
-            <div class="chart-title">สัดส่วนรายจ่ายเดือนนี้ 🍕</div>
-            <div class="chart-wrapper">
-                <canvas id="expenseChart"></canvas>
-            </div>
-        </div>
-
-        <form id="transaction-form">
-            <div class="form-group">
-                <select id="type">
-                    <option value="minus">รายจ่าย 📤</option>
-                    <option value="plus">รายรับ 📥</option>
-                    <option value="move">ย้ายเงิน 🔄</option>
-                </select>
-                <select id="method">
-                    <option value="transfer">เงินโอน 📱</option>
-                    <option value="cash">เงินสด 💵</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="number" id="amount" placeholder="จำนวนเงิน" required min="1" step="any">
-            </div>
-            
-            <input type="text" id="note" list="note-suggestions" placeholder="จดไว้หน่อยว่าค่าอะไร... (ลองพิมพ์ 'ฝากเงิน' ดูสิ)" required autocomplete="off">
-            <datalist id="note-suggestions"></datalist>
-
-            <div class="btn-group">
-                <button type="submit" id="submit-btn">บันทึกข้อมูล ✨</button>
-                <button type="button" id="cancel-btn">ยกเลิก ❌</button>
-            </div>
-        </form>
-
-        <div class="history-header">
-            <h3>ประวัติรายการ</h3>
-            <select id="month-filter">
-                <option value="all">ทั้งหมด 📅</option>
-            </select>
-        </div>
-
-        <ul class="history-list" id="list">
-            <div class="no-data">กำลังโหลดข้อมูล... 🚀</div>
-        </ul>
+    <!-- Bar -->
+    <div class="bar-wrap">
+      <div class="bar-track">
+        <div class="bar-gov" id="barGov" style="width:60%"></div>
+        <div class="bar-self" id="barSelf" style="width:40%"></div>
+      </div>
+      <div class="bar-labels">
+        <span>รัฐ 60%</span>
+        <span>คุณ 40%</span>
+      </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- Warning -->
+    <div class="warning" id="capWarn">
+      ⚠️ <strong>เกินเพดานสนับสนุน</strong> — ส่วนรัฐเกิน 1,000 บาท/คน/เดือน
+      คุณต้องจ่ายส่วนเกิน (<span id="overAmount"></span> บาท) เพิ่มเติมเอง
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAdnDcProI1UFW2a9eGiUJbLYmI7ihM1XQ",
-            authDomain: "boonsomair-3f5b0.firebaseapp.com",
-            projectId: "boonsomair-3f5b0",
-            storageBucket: "boonsomair-3f5b0.firebasestorage.app",
-            messagingSenderId: "831800219771",
-            appId: "1:831800219771:web:97243e82b452a14e0a2ade"
-        };
+    <!-- Formula -->
+    <div class="formula-box">
+      <div class="f-title">รายละเอียดการคำนวณ</div>
+      <div class="formula-row">
+        <span class="f-desc">เงินของคุณ ÷ 0.40 = ยอดร้านรับ</span>
+        <span class="f-val" id="f1">฿161.00</span>
+      </div>
+      <div class="formula-row">
+        <span class="f-desc">ยอดร้านรับ × 60% = รัฐช่วย</span>
+        <span class="f-val" id="f2">฿96.60</span>
+      </div>
+      <div class="formula-row total">
+        <span class="f-desc">ยอดร้านกดรับรวม</span>
+        <span class="f-val" id="f3">฿161.00</span>
+      </div>
+    </div>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = initializeFirestore(app, {
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
-        });
-        
-        const transactionsRef = collection(db, "transactions");
+  <!-- Reverse Calculator -->
+  <div class="reverse-card">
+    <div class="rev-title">
+      คำนวณย้อนกลับ
+      <span class="rev-tag">รู้ยอดร้านรับ → หาว่าต้องจ่ายเท่าไหร่</span>
+    </div>
+    <div class="input-group">
+      <span class="input-prefix">฿</span>
+      <input type="number" id="shopInput" min="0" step="0.01" placeholder="กรอกยอดที่ร้านกดรับ" oninput="calcReverse()" />
+      <span class="input-suffix">บาท</span>
+    </div>
+    <div class="rev-result">คุณต้องจ่ายเอง: <span id="reverseOut">—</span></div>
+  </div>
 
-        // Auth Elements
-        const loginModal = document.getElementById('login-modal');
-        const mainContainer = document.querySelector('.container');
-        const usernameInput = document.getElementById('username-input');
-        const passwordInput = document.getElementById('password-input');
-        const loginSubmitBtn = document.getElementById('login-submit-btn');
-        const btnLogout = document.getElementById('btn-logout'); // ปุ่ม Logout ใหม่
+  <p class="footer-note">
+    * ร้านค้ากด "รับยอด" ในระบบเท่ากับ ยอดเต็ม 100%<br>
+    รัฐโอนส่วน 60% ให้ร้านภายหลังผ่านระบบ · สูงสุดไม่เกิน 1,000 บาท/คน/เดือน
+  </p>
 
-        // Main App Elements
-        const form = document.getElementById('transaction-form');
-        const grandTotalDisplay = document.getElementById('grand-total');
-        const cashBalanceDisplay = document.getElementById('cash-balance');
-        const bankCurrentBalanceDisplay = document.getElementById('bank-current-balance');
-        
-        const list = document.getElementById('list');
-        const datalist = document.getElementById('note-suggestions');
-        const monthFilter = document.getElementById('month-filter');
-        const typeSelect = document.getElementById('type');
-        const methodSelect = document.getElementById('method');
-        const amountInput = document.getElementById('amount');
-        const noteInput = document.getElementById('note');
-        
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const toast = document.getElementById('toast');
+  <script>
+    function fmt(n) {
+      return '฿' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
 
-        const budgetInput = document.getElementById('budget-limit');
-        const budgetProgress = document.getElementById('budget-progress');
-        const budgetUsedLabel = document.getElementById('budget-used');
-        const budgetPercentLabel = document.getElementById('budget-percent');
-        const chartSection = document.getElementById('chart-section');
+    function calculate() {
+      const my = parseFloat(document.getElementById('myMoney').value) || 0;
+      const total = my / 0.40;
+      const gov = total * 0.60;
 
-        let transactions = [];
-        let editId = null;
-        let expenseChart = null;
-        let logoutTimeout = null;
+      document.getElementById('shopTotal').textContent = fmt(total);
+      document.getElementById('govPay').textContent = fmt(gov);
+      document.getElementById('selfPay').textContent = fmt(my);
+      document.getElementById('f1').textContent = fmt(total);
+      document.getElementById('f2').textContent = fmt(gov);
+      document.getElementById('f3').textContent = fmt(total);
 
-        // ==========================================
-        // 🔒 ระบบจัดการช่วงเวลาและสิทธิ์ผู้ใช้งาน (SECURITY HANDLER)
-        // ==========================================
-        function checkAuth() {
-            const loginTime = localStorage.getItem('mmc_login_time');
-            if (loginTime) {
-                const now = Date.now();
-                const oneHour = 60 * 60 * 1000; 
-                
-                if (now - parseInt(loginTime) < oneHour) {
-                    loginModal.style.display = 'none';
-                    mainContainer.style.display = 'block';
-                    
-                    const remainingTime = oneHour - (now - parseInt(loginTime));
-                    if(logoutTimeout) clearTimeout(logoutTimeout);
-                    logoutTimeout = setTimeout(executeLogout, remainingTime);
-                    return;
-                }
-            }
-            executeLogout(false);
-        }
+      const govPct = total > 0 ? 60 : 0;
+      const selfPct = total > 0 ? 40 : 0;
+      document.getElementById('barGov').style.width = govPct + '%';
+      document.getElementById('barSelf').style.width = selfPct + '%';
 
-        function executeLogout(showNotification = true) {
-            localStorage.removeItem('mmc_login_time');
-            loginModal.style.display = 'flex';
-            mainContainer.style.display = 'none';
-            usernameInput.value = '';
-            passwordInput.value = '';
-            if(logoutTimeout) clearTimeout(logoutTimeout);
-            
-            if(showNotification) {
-                showToast("ออกจากระบบแล้วเพื่อความปลอดภัย 🛡️", "info");
-            }
-        }
+      const warn = document.getElementById('capWarn');
+      if (gov > 1000 && total > 0) {
+        const over = (gov - 1000).toFixed(2);
+        document.getElementById('overAmount').textContent = over;
+        warn.classList.add('show');
+      } else {
+        warn.classList.remove('show');
+      }
+    }
 
-        loginSubmitBtn.addEventListener('click', function() {
-            const user = usernameInput.value.trim();
-            const pass = passwordInput.value.trim();
+    function calcReverse() {
+      const shop = parseFloat(document.getElementById('shopInput').value) || 0;
+      const self = shop * 0.40;
+      document.getElementById('reverseOut').textContent = shop ? fmt(self) : '—';
+    }
 
-            if (user === 'PPKK' && pass === '082197') {
-                localStorage.setItem('mmc_login_time', Date.now().toString());
-                loginModal.style.display = 'none';
-                mainContainer.style.display = 'block';
-                showToast("ยินดีต้อนรับเข้าสู่ระบบสำเร็จ! 🎉", "success");
-                
-                if(logoutTimeout) clearTimeout(logoutTimeout);
-                logoutTimeout = setTimeout(executeLogout, 60 * 60 * 1000);
-            } else {
-                showToast("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง! ❌", "warning");
-            }
-        });
-
-        // Event Listener สำหรับปุ่ม Logout
-        btnLogout.addEventListener('click', function() {
-            executeLogout(true);
-        });
-
-        // รันตรวจสอบสิทธิ์ทันทีเมื่อโหลดหน้าเว็บ
-        checkAuth();
-
-        // ==========================================
-        // 🧠 ระบบ SMART AUTO-FILL
-        // ==========================================
-        budgetInput.value = localStorage.getItem('monthly_budget') || 5000;
-
-        budgetInput.addEventListener('input', function() {
-            let val = parseFloat(this.value);
-            if (isNaN(val) || val < 0) val = 0;
-            localStorage.setItem('monthly_budget', val);
-            updateUI();
-        });
-
-        const expenseKeywords = ["ค่า", "ซื้อ", "จ่าย", "ช้อป", "บิล", "หนี้", "โอนให้", "เติมเงิน"];
-        const incomeKeywords = ["รับ", "เงินเดือน", "โอนเข้า", "ขาย", "ได้เงิน", "ถูกหวย", "เงินทอน"];
-        const transferKeywords = ["ฝากเงิน", "เอาเงินเข้าธนาคาร", "ถอนเงิน", "กดเงิน", "ย้ายเงิน", "โอนเข้าบัญชีตัวเอง"];
-
-        noteInput.addEventListener('input', function() {
-            const text = this.value.trim();
-            if (!text) return;
-
-            let newType = typeSelect.value;
-            let foundPastMatch = false;
-
-            const pastTx = transactions.find(t => t.note === text);
-
-            if (pastTx) {
-                amountInput.value = pastTx.amount;
-                newType = pastTx.type;
-                if (pastTx.method) methodSelect.value = pastTx.method; 
-                foundPastMatch = true;
-            } else {
-                if (transferKeywords.some(keyword => text.includes(keyword))) {
-                    newType = "move";
-                    if(text.includes("ฝาก") || text.includes("เข้าธนาคาร")) {
-                        methodSelect.value = "transfer"; 
-                    } else if(text.includes("ถอน") || text.includes("กดเงิน")) {
-                        methodSelect.value = "cash"; 
-                    }
-                } else if (expenseKeywords.some(keyword => text.includes(keyword))) {
-                    newType = "minus";
-                } else if (incomeKeywords.some(keyword => text.includes(keyword))) {
-                    newType = "plus";
-                }
-            }
-
-            if (newType !== typeSelect.value) {
-                typeSelect.value = newType;
-                typeSelect.classList.remove('auto-changed');
-                void typeSelect.offsetWidth; 
-                typeSelect.classList.add('auto-changed');
-            }
-
-            if (foundPastMatch) {
-                amountInput.classList.remove('auto-changed');
-                void amountInput.offsetWidth;
-                amountInput.classList.add('auto-changed');
-            }
-        });
-
-        const defaultSuggestions = [
-            "ฝากเงินสดเข้าธนาคาร 🏦", "ถอนเงินสดออกจากตู้ 💵", "ชาไข่มุก 🧋", 
-            "หมูกระทะ 🥓", "ค่าเดินทาง 🚝", "ช้อปปิ้ง 🛍️", "เงินเดือน 💰", "กาแฟ ☕"
-        ];
-
-        function showToast(text, type = 'success') {
-            const toastText = document.getElementById('toast-text');
-            const toastIcon = document.getElementById('toast-icon');
-            toastText.innerText = text;
-            toast.className = "toast-container";
-            void toast.offsetWidth; 
-            toast.className = "toast-container show";
-            
-            if (type === 'success') { toast.classList.add('toast-success'); toastIcon.innerText = '🎉'; } 
-            else if (type === 'info') { toast.classList.add('toast-info'); toastIcon.innerText = '🛡️'; } 
-            else if (type === 'delete') { toast.classList.add('toast-delete'); toastIcon.innerText = '🗑️'; } 
-            else if (type === 'warning') { toast.classList.add('toast-warning'); toastIcon.innerText = '⚠️'; }
-
-            setTimeout(() => { toast.classList.remove('show'); }, 2500);
-        }
-
-        function updateSuggestions() {
-            datalist.innerHTML = '';
-            const pastNotes = transactions.map(t => t.note);
-            const allSuggestions = [...new Set([...defaultSuggestions, ...pastNotes])];
-            allSuggestions.forEach(note => {
-                const option = document.createElement('option');
-                option.value = note;
-                datalist.appendChild(option);
-            });
-        }
-
-        function updateMonthFilterOptions() {
-            const currentSelection = monthFilter.value;
-            monthFilter.innerHTML = '<option value="all">ทั้งหมด 📅</option>';
-            const months = transactions.map(t => {
-                const d = new Date(t.date);
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            });
-            const uniqueMonths = [...new Set(months)].sort().reverse();
-            uniqueMonths.forEach(m => {
-                const [year, month] = m.split('-');
-                const dateObj = new Date(year, month - 1);
-                const monthName = dateObj.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
-                const option = document.createElement('option');
-                option.value = m;
-                option.innerText = monthName;
-                monthFilter.appendChild(option);
-            });
-            if ([...monthFilter.options].some(o => o.value === currentSelection)) monthFilter.value = currentSelection;
-            else monthFilter.value = 'all';
-        }
-
-        function renderExpenseChart(expenseList) {
-            if (expenseList.length === 0) { chartSection.style.display = 'none'; return; }
-            chartSection.style.display = 'block';
-
-            const groupedData = {};
-            expenseList.forEach(item => { groupedData[item.note] = (groupedData[item.note] || 0) + item.amount; });
-            const sortedItems = Object.keys(groupedData).map(key => ({ note: key, amount: groupedData[key] })).sort((a, b) => b.amount - a.amount);
-
-            let finalLabels = []; let finalData = [];
-            if (sortedItems.length > 4) {
-                for (let i = 0; i < 4; i++) { finalLabels.push(sortedItems[i].note); finalData.push(sortedItems[i].amount); }
-                let otherSum = 0; for (let i = 4; i < sortedItems.length; i++) { otherSum += sortedItems[i].amount; }
-                finalLabels.push('อื่นๆ 🧸'); finalData.push(otherSum);
-            } else {
-                sortedItems.forEach(item => { finalLabels.push(item.note); finalData.push(item.amount); });
-            }
-
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            if (expenseChart) {
-                expenseChart.data.labels = finalLabels; expenseChart.data.datasets[0].data = finalData; expenseChart.update(); 
-            } else {
-                expenseChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: finalLabels,
-                        datasets: [{ data: finalData, backgroundColor: ['#ffb4a2', '#ffcdb2', '#b5e48c', '#e2cfea', '#f7d1cd', '#a8b2ff'], borderWidth: 2, borderColor: '#ffffff' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 800, easing: 'easeOutQuart' }, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 12 }, boxWidth: 12 } } } }
-                });
-            }
-        }
-
-        function updateUI() {
-            list.innerHTML = '';
-            let absoluteCashBalance = 0;   
-            let absoluteBankBalance = 0;   
-            let currentMonthExpenses = 0;  
-            const selectedMonth = monthFilter.value;
-
-            transactions.forEach(t => {
-                if (t.type === 'plus') {
-                    if (t.method === 'cash') absoluteCashBalance += t.amount;
-                    else absoluteBankBalance += t.amount;
-                } else if (t.type === 'minus') {
-                    if (t.method === 'cash') absoluteCashBalance -= t.amount;
-                    else absoluteBankBalance -= t.amount;
-                } else if (t.type === 'move') {
-                    if (t.method === 'transfer') {
-                        absoluteCashBalance -= t.amount;
-                        absoluteBankBalance += t.amount;
-                    } else { 
-                        absoluteBankBalance -= t.amount;
-                        absoluteCashBalance += t.amount;
-                    }
-                }
-            });
-
-            const filteredTransactions = transactions.filter(t => {
-                if (selectedMonth === 'all') return true;
-                const d = new Date(t.date);
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth;
-            });
-
-            const currentExpensesList = filteredTransactions.filter(t => t.type === 'minus');
-
-            if (filteredTransactions.length === 0) {
-                list.innerHTML = '<div class="no-data">ไม่มีรายการของเดือนนี้ 🍩</div>';
-            }
-
-            filteredTransactions.forEach(t => {
-                if (t.type === 'minus') currentMonthExpenses += t.amount;
-
-                const d = new Date(t.date);
-                const formattedDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
-                
-                let methodText = t.method === 'cash' ? '💵 เงินสด' : '📱 เงินโอน';
-                let typeClass = t.type;
-                let signText = t.type === 'plus' ? '+' : '-';
-                let amountColor = t.type === 'plus' ? '#7cb55e' : '#e07a64';
-
-                if (t.type === 'move') {
-                    typeClass = 'move';
-                    signText = '🔄 ';
-                    amountColor = '#52b788';
-                    methodText = t.method === 'transfer' ? '💵 ➔ 📱 ฝากเงิน' : '📱 ➔ 💵 ถอนเงิน';
-                }
-
-                const li = document.createElement('li');
-                li.classList.add('item', typeClass);
-                li.setAttribute('data-id', t.id); 
-                li.innerHTML = `
-                    <div class="item-details">
-                        <span class="item-note">${t.note} <span class="method-tag">${methodText}</span></span>
-                        <span class="item-date">${formattedDate}</span>
-                    </div>
-                    <div class="item-right">
-                        <span class="item-amount" style="color: ${amountColor};">
-                            ${signText}฿${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        </span>
-                        <button class="action-btn edit-btn-icon" data-edit-id="${t.id}">✏️</button>
-                        <button class="action-btn delete-btn-icon" data-delete-id="${t.id}">🗑️</button>
-                    </div>
-                `;
-                list.appendChild(li);
-            });
-
-            const grandTotal = absoluteCashBalance + absoluteBankBalance;    
-            grandTotalDisplay.innerText = `฿${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            cashBalanceDisplay.innerText = `฿${absoluteCashBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            bankCurrentBalanceDisplay.innerText = `฿${absoluteBankBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-            const budgetLimit = parseFloat(budgetInput.value) || 0;
-            budgetUsedLabel.innerText = `ใช้ไป: ฿${currentMonthExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-            if (budgetLimit > 0) {
-                let percent = Math.min((currentMonthExpenses / budgetLimit) * 100, 100);
-                budgetPercentLabel.innerText = `${Math.round((currentMonthExpenses / budgetLimit) * 100)}%`;
-                budgetProgress.style.width = `${percent}%`;
-                if (percent >= 100) budgetProgress.style.backgroundColor = '#ffb4b4'; 
-                else if (percent >= 80) budgetProgress.style.backgroundColor = '#ffd166'; 
-                else budgetProgress.style.backgroundColor = '#b5e48c'; 
-            } else {
-                budgetPercentLabel.innerText = '0%'; budgetProgress.style.width = '0%'; budgetProgress.style.backgroundColor = '#b5e48c';
-            }
-            
-            renderExpenseChart(currentExpensesList);
-
-            document.querySelectorAll('.delete-btn-icon').forEach(btn => {
-                btn.addEventListener('click', function() { deleteTransaction(this.getAttribute('data-delete-id')); });
-            });
-            document.querySelectorAll('.edit-btn-icon').forEach(btn => {
-                btn.addEventListener('click', function() { startEdit(this.getAttribute('data-edit-id')); });
-            });
-            updateSuggestions();
-        }
-
-        function startEdit(id) {
-            const target = transactions.find(t => t.id === id);
-            if (!target) return;
-            editId = id;
-            typeSelect.value = target.type;
-            methodSelect.value = target.method || 'transfer'; 
-            amountInput.value = target.amount;
-            noteInput.value = target.note;
-            submitBtn.innerText = "อัปเดตข้อมูล 🛠️";
-            submitBtn.style.background = "#ffd166";
-            cancelBtn.style.display = "block";
-            amountInput.focus();
-        }
-
-        function resetFormState() {
-            editId = null; form.reset();
-            submitBtn.innerText = "บันทึกข้อมูล ✨"; submitBtn.style.background = "var(--primary)";
-            cancelBtn.style.display = "none";
-        }
-        cancelBtn.addEventListener('click', resetFormState);
-
-        function deleteTransaction(id) {
-            const itemElement = document.querySelector(`[data-id="${id}"]`);
-            if (itemElement) {
-                itemElement.classList.add('fade-out');
-                showToast("ลบรายการเรียบร้อยแล้ว", "delete");
-                if (editId === id) resetFormState();
-                setTimeout(() => {
-                    deleteDoc(doc(db, "transactions", id)).catch(err => { showToast("เกิดข้อผิดพลาดในการลบ", "warning"); });
-                }, 300);
-            }
-        }
-
-        const q = query(transactionsRef, orderBy("date", "desc"));
-        onSnapshot(q, (snapshot) => {
-            transactions = [];
-            snapshot.forEach((doc) => { transactions.push({ id: doc.id, ...doc.data() }); });
-            updateMonthFilterOptions(); updateUI();
-        });
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const type = typeSelect.value;
-            const method = methodSelect.value;
-            const amount = parseFloat(amountInput.value);
-            const note = noteInput.value.trim();
-
-            if (editId) {
-                const targetId = editId; resetFormState();
-                showToast("อัปเดตรายการเรียบร้อย! 💖", "info");
-                updateDoc(doc(db, "transactions", targetId), { type, method, amount, note });
-            } else {
-                if (type === 'minus' && (parseFloat(budgetInput.value) || 0) > 0) {
-                    const currentMonthStr = new Date().toISOString().substring(0, 7); 
-                    const thisMonthExpenses = transactions
-                        .filter(t => t.type === 'minus' && t.date.startsWith(currentMonthStr))
-                        .reduce((sum, t) => sum + t.amount, 0) + amount;
-                    if (thisMonthExpenses > parseFloat(budgetInput.value)) showToast(`เตือนสติ! เงินเกินงบแล้วนะตัวเธอ 🚨`, "warning");
-                    else showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
-                } else {
-                    showToast("บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!", "success");
-                }
-                form.reset();
-                addDoc(transactionsRef, { type, method, amount, note, date: new Date().toISOString() });
-            }
-        });
-
-        monthFilter.addEventListener('change', updateUI);
-    </script>
+    calculate();
+  </script>
 </body>
 </html>
